@@ -27,6 +27,7 @@
         },
         "ECSAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "DependsOn": "ECSLaunchConfiguration",
             "Properties": {
                 "AvailabilityZones": [ "us-east-1a" ],
                 "LaunchConfigurationName": "ECSLaunchConfiguration",
@@ -101,25 +102,70 @@
                 }
             }
         },
+        "ECSInstanceProfile": {
+            "DependsOn": "ECSRole",
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": { "Path": "/", "Roles": [ "ECSRole" ]
+            }
+        },
         "ECSRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "Path": "/",
                 "RoleName": { "Fn::Sub": "${ClusterName}-ECSRole-${AWS::Region}" },
-                "AssumeRolePolicyDocument": "{\n    \"Statement\": [{\n        \"Action\": \"sts:AssumeRole\",\n        \"Effect\": \"Allow\",\n        \"Principal\": {\n            \"Service\": \"ec2.amazonaws.com\"\n        }\n    }]\n}\n",
+                "AssumeRolePolicyDocument": { "Statement": [{ "Action": "sts:AssumeRole", "Effect": "Allow", "Principal": { "Service": "ec2.amazonaws.com" } }] },
                 "Policies": [{
                     "PolicyName": "ecs-service",
-                    "PolicyDocument": "{\n    \"Statement\": [{\n        \"Effect\": \"Allow\",\n        \"Action\": [\n            \"ecs:CreateCluster\",\n            \"ecs:DeregisterContainerInstance\",\n            \"ecs:DiscoverPollEndpoint\",\n            \"ecs:Poll\",\n            \"ecs:RegisterContainerInstance\",\n            \"ecs:StartTelemetrySession\",\n            \"ecs:Submit*\",\n            \"logs:CreateLogStream\",\n            \"logs:PutLogEvents\",\n            \"ecr:BatchCheckLayerAvailability\",\n            \"ecr:BatchGetImage\",\n            \"ecr:GetDownloadUrlForLayer\",\n            \"ecr:GetAuthorizationToken\",\n            \"ssm:DescribeAssociation\",\n            \"ssm:GetDeployablePatchSnapshotForInstance\",\n            \"ssm:GetDocument\",\n            \"ssm:GetManifest\",\n            \"ssm:GetParameters\",\n            \"ssm:ListAssociations\",\n            \"ssm:ListInstanceAssociations\",\n            \"ssm:PutInventory\",\n            \"ssm:PutComplianceItems\",\n            \"ssm:PutConfigurePackageResult\",\n            \"ssm:UpdateAssociationStatus\",\n            \"ssm:UpdateInstanceAssociationStatus\",\n            \"ssm:UpdateInstanceInformation\",\n            \"ec2messages:AcknowledgeMessage\",\n            \"ec2messages:DeleteMessage\",\n            \"ec2messages:FailMessage\",\n            \"ec2messages:GetEndpoint\",\n            \"ec2messages:GetMessages\",\n            \"ec2messages:SendReply\",\n            \"cloudwatch:PutMetricData\",\n            \"ec2:DescribeInstanceStatus\",\n            \"ds:CreateComputer\",\n            \"ds:DescribeDirectories\",\n            \"logs:CreateLogGroup\",\n            \"logs:CreateLogStream\",\n            \"logs:DescribeLogGroups\",\n            \"logs:DescribeLogStreams\",\n            \"logs:PutLogEvents\",\n            \"s3:PutObject\",\n            \"s3:GetObject\",\n            \"s3:AbortMultipartUpload\",\n            \"s3:ListMultipartUploadParts\",\n            \"s3:ListBucket\",\n            \"s3:ListBucketMultipartUploads\"\n        ],\n        \"Resource\": \"*\"\n    }]\n}\n"
+                    "PolicyDocument": {
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "ecs:CreateCluster",
+                                "ecs:DeregisterContainerInstance",
+                                "ecs:DiscoverPollEndpoint",
+                                "ecs:Poll",
+                                "ecs:RegisterContainerInstance",
+                                "ecs:StartTelemetrySession",
+                                "ecs:Submit*",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "ecr:BatchCheckLayerAvailability",
+                                "ecr:BatchGetImage",
+                                "ecr:GetDownloadUrlForLayer",
+                                "ecr:GetAuthorizationToken",
+                                "ssm:DescribeAssociation",
+                                "ssm:GetDeployablePatchSnapshotForInstance",
+                                "ssm:GetDocument",
+                                "ssm:GetManifest",
+                                "ssm:GetParameters",
+                                "ssm:ListAssociations",
+                                "ssm:ListInstanceAssociations",
+                                "ssm:PutInventory",
+                                "ssm:PutComplianceItems",
+                                "ssm:PutConfigurePackageResult",
+                                "ssm:UpdateAssociationStatus",
+                                "ssm:UpdateInstanceAssociationStatus",
+                                "ssm:UpdateInstanceInformation",
+                                "ec2messages:AcknowledgeMessage",
+                                "ec2messages:DeleteMessage",
+                                "ec2messages:FailMessage",
+                                "ec2messages:GetEndpoint",
+                                "ec2messages:GetMessages",
+                                "ec2messages:SendReply",
+                                "cloudwatch:PutMetricData",
+                                "ec2:DescribeInstanceStatus",
+                                "ds:CreateComputer",
+                                "ds:DescribeDirectories",
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:DescribeLogGroups",
+                                "logs:DescribeLogStreams",
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
                 }]
-            }
-        },
-        "ECSInstanceProfile": {
-            "Type": "AWS::IAM::InstanceProfile",
-            "Properties": {
-                "Path": "/",
-                "Roles": [
-                    "ECSRole"
-                ]
             }
         },
         "ECSServiceAutoScalingRole": {
