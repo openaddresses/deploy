@@ -1,6 +1,6 @@
 <h1 align="center">Machine-ECS</h1>
 
-<p align="center">Deploy Tools for Cloudformation</p>
+<p align="center">ECS Cluster Creation & OpenAddresses Deploy Tools for Cloudformation</p>
 
 ## Brief
 
