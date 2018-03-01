@@ -1,5 +1,5 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
+    "AWSTemplateFormatVersion": "2010-09-09",
         "Description" : "Amazon ECS Preview Quickstart Template",
         "Parameters" : {
             "ClusterName": {
@@ -12,21 +12,13 @@
                 "Description" : "Container Instance type",
                 "Type" : "String",
                 "Default" : "m3.medium",
-                "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge" ]
+                "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge" ],
                 "ConstraintDescription" : "must be a valid EC2 instance type."
             }
         },
         "Mappings" : {
-            "AWSInstanceType2Arch" : {
-                "m3.medium"   : { "Arch" : "HVM64"  },
-                "m3.large"    : { "Arch" : "HVM64"  },
-                "m3.xlarge"   : { "Arch" : "HVM64"  },
-            },
-
-            "AWSRegionArch2AMI" : {
-                "us-east-1"      : { "HVM64" : "ami-34ddbe5c"  }
-            }
-
+            "AWSInstanceType2Arch" : { "m3.medium": { "Arch" : "HVM64" }, "m3.large": { "Arch" : "HVM64" }, "m3.xlarge": { "Arch" : "HVM64" } },
+            "AWSRegionArch2AMI" : { "us-east-1": { "HVM64" : "ami-34ddbe5c"  } }
         },
         "Resources" : {
             "ContainerInstance" : {
@@ -40,7 +32,7 @@
                     "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
                         "#!/bin/bash -xe\n",
                         "apt-get update\n",
-                        "apt-get install -y python-pip awscli\n"
+                        "apt-get install -y python-pip awscli\n",
                         "aws s3 cp s3://cfn-config-credentials/ ~/.ssh/authorized_keys --recursive\n",
                         "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n" 
                     ]]}}
@@ -89,7 +81,7 @@
                                     "s3:GetObject",
                                     "s3:HeadObject"
                                 ],
-                                Resource: [ "arn:aws:s3:::cfn-config-credentials" ]
+                                "Resource": [ "arn:aws:s3:::cfn-config-credentials" ]
                             }]
                         }
                     } ]
