@@ -16,9 +16,10 @@ if (!argv._[2] || argv.help) {
     console.log();
     console.log('<command>:');
     console.log('    init      [--help]         Setup Credentials for using OA CLI');
-    console.log('    create    [--help]         Create a new stack');
-    console.log('    update    [--help]         Update an existing stack');
-    console.log('    delete    [--help]         Delete an existing stack');
+    console.log('    list      [--help]         NOT IMPLEMENTED: List all stack assoc. with the current repo');
+    console.log('    create    [--help]         Create a new stack of the current repo');
+    console.log('    update    [--help]         Update an existing stack of the current repo');
+    console.log('    delete    [--help]         Delete an existing stack of the current repo');
     console.log();
     console.log('[options]:');
     console.log('    --version, -v           Displays version information');
@@ -37,17 +38,22 @@ if (command === 'create' && argv.help) {
     console.log('template should be in the following location:');
     console.log('  cloudformation/<reponame>.template.json');
     console.log();
-}
-
-if (command === 'update' && argv.help) {
+    process.exit();
+} else if (command === 'update' && argv.help) {
     console.log();
     console.log('usage oa update <STACK>');
     console.log()
-}
-
-if (command === 'delete' && argv.help) {
+    process.exit();
+} else if (command === 'delete' && argv.help) {
     console.log();
     console.log('usage oa delete <STACK>');
+    console.log()
+    process.exit();
+} else if (command === 'list' && argv.help) {
+    console.log();
+    console.log('usage oa list');
+    console.log();
+    console.error('List all of the currently running stacks deployed from the current repo');
     console.log()
 }
 
