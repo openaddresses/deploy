@@ -13,6 +13,11 @@
             "Type": "Number",
             "Default": 1
         },
+        "MaxClusterSize": {
+            "Description": "Max ECS Hosts for Docker Tasks in Cluster",
+            "Type": "Number",
+            "Default": 10
+        },
         "InstanceType" : {
             "Description" : "Container Instance type",
             "Type" : "String",
@@ -31,16 +36,16 @@
             "Properties": {
                 "AvailabilityZones": [ "us-east-1a" ],
                 "LaunchConfigurationName": { "Ref": "ECSLaunchConfiguration" },
-                "MinSize": { "Ref": "ClusterSize" },
-                "MaxSize": { "Ref": "ClusterSize" },
+                "MinSize": 0,
+                "MaxSize": { "Ref": "MaxClusterSize" },
                 "DesiredCapacity": { "Ref": "ClusterSize" },
                 "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "${ClusterName} ECS host" }, "PropagateAtLaunch": true }]
             },
             "CreationPolicy": { "ResourceSignal": { "Timeout": "PT15M" } },
             "UpdatePolicy": {
                 "AutoScalingRollingUpdate": {
-                    "MinInstancesInService": 1,
-                    "MaxBatchSize": 1,
+                    "MinInstancesInService": 0,
+                    "MaxBatchSize": 3,
                     "PauseTime": "PT15M",
                     "SuspendProcesses": [ "HealthCheck", "ReplaceUnhealthy", "AZRebalance", "AlarmNotification", "ScheduledActions" ],
                     "WaitOnResourceSignals": true
