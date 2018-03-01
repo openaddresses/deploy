@@ -24,7 +24,7 @@
     "Resources" : {
         "ECSCluster": {
             "Type": "AWS::ECS::Cluster",
-            "Properties": { "ClusterName": "ClusterName" }
+            "Properties": { "ClusterName": { "Ref": "ClusterName" } }
         },
         "ECSAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
