@@ -1,8 +1,12 @@
 <h1 align="center">Machine-ECS</h1>
 
----
+<p align="center">Deploy Tools for Cloudformation</p>
 
-<p align="center">Cloudformation to create and manage underlying ECS Cluster Instances</p>
+## Brief
+
+- Store and manage OpenAddresses AWS creds locally
+- Create, Update, & Delete CF based stacks from the terminal
+- CF templates to manage underlying ECS Infrastructure
 
 ## Install
 
