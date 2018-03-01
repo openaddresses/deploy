@@ -59,8 +59,8 @@
             "Type": "AWS::AutoScaling::LaunchConfiguration",
             "Properties": {
                 "ImageId": "ami-a7a242da",
-                "InstanceType": "InstanceType",
-                "SecurityGroups": [ "ECSHostSecurityGroup" ],
+                "InstanceType": { "Ref": "InstanceType" },
+                "SecurityGroups": [ { "Ref": "ECSHostSecurityGroup" } ],
                 "IamInstanceProfile": { "Ref": "ECSInstanceProfile" },
                 "UserData": {
                     "Fn::Base64": { "Fn::Sub": "#!/bin/bash\nyum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\nyum install -y aws-cfn-bootstrap\n/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSLaunchConfiguration\n/opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSAutoScalingGroup\n" }
