@@ -10,21 +10,26 @@ If you don't have yarn installed - follow the instructions [here](https://yarnpk
 
 ```
 yarn install
+
+yarn link
 ```
 
-### Create Cluster
+### Auth Setup
 
-Ensure the following variables are set:
+Before you can make changes to any of the underlying infrastructure you must first authenticate the oa cli
 
-```
-AWS_DEFAULT_REGION="us-east-1"
-AWS_ACCESS_KEY_ID
-AWS_ACCOUNT_ID
-AWS_SECRET_ACCESS_KEY
-```
+To do so run:
 
 ```
-$(yarn bin)/cfn-config create <STACK NAME> cloudformation/machine-ecs.template -c cfn-config-active-${AWS_ACCOUNT_ID}-${AWS_DEFAULT_REGION} -r ${AWS_DEFAULT_REGION}
+oa init
 ```
 
+and follow the prompts for your credentials.
 
+Once finished run
+
+```
+oa
+```
+
+to see a full list of options
