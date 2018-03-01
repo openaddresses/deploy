@@ -1,219 +1,173 @@
-{ "AWSTemplateFormatVersion": "2010-09-09", "Description" : "Amazon ECS Preview Quickstart Template",
-        "Parameters" : {
-            "ClusterName": {
-                "Description" : "Name of your Amazon ECS Cluster",
-                "Type" : "String",
-                "ConstraintDescription" : "must be a valid Amazon ECS Cluster.",
-                "Default" : "default"
+{ "AWSTemplateFormatVersion": "2010-09-09",
+    "Description" : "Amazon ECS Preview Quickstart Template",
+    "Parameters" : {
+        "ClusterName": {
+            "Description" : "Name of your Amazon ECS Cluster",
+            "Type" : "String",
+            "ConstraintDescription" : "must be a valid Amazon ECS Cluster.",
+            "Default" : "default"
+        },
+        "ClusterSize": {
+            "Description": "How many ECS hosts do you want to initially deploy?",
+            "Type": "Number",
+            "Default": 1
+        },
+        "InstanceType" : {
+            "Description" : "Container Instance type",
+            "Type" : "String",
+            "Default" : "m3.medium",
+            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge" ],
+            "ConstraintDescription" : "must be a valid EC2 instance type."
+        }
+    },
+    "Resources" : {
+        "ECSCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": { "ClusterName": "ClusterName" }
+        },
+        "ECSAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": [ "us-east-1a" ],
+                "LaunchConfigurationName": "ECSLaunchConfiguration",
+                "MinSize": { "Ref": "ClusterSize" },
+                "MaxSize": { "Ref": "ClusterSize" },
+                "DesiredCapacity": { "Ref": "ClusterSize" },
+                "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "${ClusterName} ECS host" }, "PropagateAtLaunch": true }]
             },
-            "InstanceType" : {
-                "Description" : "Container Instance type",
-                "Type" : "String",
-                "Default" : "m3.medium",
-                "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge" ],
-                "ConstraintDescription" : "must be a valid EC2 instance type."
+            "CreationPolicy": { "ResourceSignal": { "Timeout": "PT15M" } },
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MinInstancesInService": 1,
+                    "MaxBatchSize": 1,
+                    "PauseTime": "PT15M",
+                    "SuspendProcesses": [ "HealthCheck", "ReplaceUnhealthy", "AZRebalance", "AlarmNotification", "ScheduledActions" ],
+                    "WaitOnResourceSignals": true
+                }
             }
         },
-        "Mappings" : {
-            "AWSInstanceType2Arch" : { "m3.medium": { "Arch" : "HVM64" }, "m3.large": { "Arch" : "HVM64" }, "m3.xlarge": { "Arch" : "HVM64" } },
-            "AWSRegionArch2AMI" : { "us-east-1": { "HVM64" : "ami-34ddbe5c"  } }
-        },
-        "Resources" : {
-            "ContainerInstance" : {
-                "Type": "AWS::EC2::Instance",
-                "Metadata" : {
-                    "AWS::CloudFormation::Init" : {
-                        "configSets" : { "install_all" : [ "install_cfn", "install_app", "install_logs" ] },
-                        "install_cfn" : {
-                            "files" : {
-                                "/etc/cfn/cfn-hup.conf" : {
-                                    "content" : { "Fn::Join" : ["", [ "[main]\n", "stack=", { "Ref" : "AWS::StackId" }, "\n", "region=", { "Ref" : "AWS::Region" }, "\n" ]]},
-                                    "mode"    : "000400",
-                                    "owner"   : "root",
-                                    "group"   : "root"
-                                },
-                                "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
-                                    "content": { "Fn::Join" : ["", [
-                                        "[cfn-auto-reloader-hook]\n",
-                                        "triggers=post.update\n",
-                                        "path=Resources.ContainerInstance.Metadata.AWS::CloudFormation::Init\n",
-                                        "action=/opt/aws/bin/cfn-init -v ",
-                                        "         --stack ", { "Ref" : "AWS::StackName" },
-                                        "         --resource ContainerInstance ",
-                                        "         --configsets install_all ",
-                                        "         --region ", { "Ref" : "AWS::Region" }, "\n",
-                                        "runas=root\n"
-                                    ]]},
-                                    "mode"    : "000400",
-                                    "owner"   : "root",
-                                    "group"   : "root"
-                                }
-                            },
-                            "services" : { "sysvinit" : { "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true", "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]} } }
+        "ECSLaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": "ami-a7a242da",
+                "InstanceType": "InstanceType",
+                "SecurityGroups": [ "SecurityGroup" ],
+                "IamInstanceProfile": "ECSInstanceProfile",
+                "UserData": {
+                    "Fn::Base64": { "Fn::Sub": "#!/bin/bash\nyum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\nyum install -y aws-cfn-bootstrap\n/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSLaunchConfiguration\n/opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSAutoScalingGroup\n" }
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {
+                            "yum": { "awslogs": [ ] }
                         },
-                        "install_app": {
-                            "commands": {
-                                "00": { "command": "mkdir -p ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys" },
-                                "01": { "command": "aws s3 cp s3://cfn-config-credentials/ ~/.ssh/authorized_keys --recursive" },
-                                "02": { "command": "chmod 600 ~/.ssh/authorized_keys/*" }
+                        "commands": {
+                            "01_add_instance_to_cluster": { "command": { "Fn::Sub": "echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config" } }
+                        },
+                        "files": {
+                            "/etc/cfn/cfn-hup.conf": {
+                                "mode": 256,
+                                "owner": "root",
+                                "group": "root",
+                                "content": { "Fn::Sub": "[main]\nstack=${AWS::StackId}\nregion=${AWS::Region}\n" }
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": { "Fn::Sub": "[cfn-auto-reloader-hook]\ntriggers=post.update\npath=Resources.ECSLaunchConfiguration.Metadata.AWS::CloudFormation::Init\naction=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSLaunchConfiguration\n" }
+                            },
+                            "/etc/awslogs/awscli.conf": {
+                                "content": { "Fn::Sub": "[plugins]\ncwlogs = cwlogs\n[default]\nregion = ${AWS::Region}\n" }
+                            },
+                            "/etc/awslogs/awslogs.conf": {
+                                "content": { "Fn::Sub": "[general]\nstate_file = /var/lib/awslogs/agent-state\n\n[/var/log/dmesg]\nfile = /var/log/dmesg\nlog_group_name = ${ECSCluster}-/var/log/dmesg\nlog_stream_name = ${ECSCluster}\n\n[/var/log/messages]\nfile = /var/log/messages\nlog_group_name = ${ECSCluster}-/var/log/messages\nlog_stream_name = ${ECSCluster}\ndatetime_format = %b %d %H:%M:%S\n\n[/var/log/docker]\nfile = /var/log/docker\nlog_group_name = ${ECSCluster}-/var/log/docker\nlog_stream_name = ${ECSCluster}\ndatetime_format = %Y-%m-%dT%H:%M:%S.%f\n\n[/var/log/ecs/ecs-init.log]\nfile = /var/log/ecs/ecs-init.log.*\nlog_group_name = ${ECSCluster}-/var/log/ecs/ecs-init.log\nlog_stream_name = ${ECSCluster}\ndatetime_format = %Y-%m-%dT%H:%M:%SZ\n\n[/var/log/ecs/ecs-agent.log]\nfile = /var/log/ecs/ecs-agent.log.*\nlog_group_name = ${ECSCluster}-/var/log/ecs/ecs-agent.log\nlog_stream_name = ${ECSCluster}\ndatetime_format = %Y-%m-%dT%H:%M:%SZ\n\n[/var/log/ecs/audit.log]\nfile = /var/log/ecs/audit.log.*\nlog_group_name = ${ECSCluster}-/var/log/ecs/audit.log\nlog_stream_name = ${ECSCluster}\ndatetime_format = %Y-%m-%dT%H:%M:%SZ\n" }
                             }
                         },
-                        "install_logs": {
-                            "packages" : { "yum" : { "awslogs" : [] } },
-                            "files": {
-                                "/etc/awslogs/awslogs.conf": {
-                                    "content": { "Fn::Join": [ "", [
-                                        "[general]\n",
-                                        "state_file= /var/awslogs/state/agent-state\n",
-                                        "[/var/log/cloud-init.log]\n",
-                                        "file = /var/log/cloud-init.log\n",
-                                        "log_group_name = ", { "Ref": "ECSLogs" }, "\n",
-                                        "log_stream_name = {instance_id}/cloud-init.log\n",
-                                        "[/var/log/cloud-init-output.log]\n",
-                                        "file = /var/log/cloud-init-output.log\n",
-                                        "log_group_name = ", { "Ref": "ECSLogs" }, "\n",
-                                        "log_stream_name = {instance_id}/cloud-init-output.log\n",
-                                        "datetime_format = \n",
-                                        "[/var/log/cfn-init.log]\n",
-                                        "file = /var/log/cfn-init.log\n",
-                                        "log_group_name = ", { "Ref": "ECSLogs" }, "\n",
-                                        "log_stream_name = {instance_id}/cfn-init.log\n",
-                                        "datetime_format = \n",
-                                        "[/var/log/cfn-hup.log]\n",
-                                        "file = /var/log/cfn-hup.log\n",
-                                        "log_group_name = ", { "Ref": "ECSLogs" }, "\n",
-                                        "log_stream_name = {instance_id}/cfn-hup.log\n",
-                                        "datetime_format = \n",
-                                        "[/var/log/cfn-wire.log]\n",
-                                        "file = /var/log/cfn-wire.log\n",
-                                        "log_group_name = ", { "Ref": "ECSLogs" }, "\n",
-                                        "log_stream_name = {instance_id}/cfn-wire.log\n",
-                                        "datetime_format = \n"
-                                    ] ] },
-                                    "mode": "000444",
-                                    "owner": "root",
-                                    "group": "root"
+                        "services": {
+                            "sysvinit": {
+                                "cfn-hup": {
+                                    "enabled": true,
+                                    "ensureRunning": true,
+                                    "files": [ "/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf" ]
                                 },
-                                "/etc/awslogs/awscli.conf": {
-                                    "content": { "Fn::Join": [ "", [ "[plugins]\n", "cwlogs = cwlogs\n", "[default]\n", "region = ", { "Ref" : "AWS::Region" }, "\n" ] ] },
-                                    "mode": "000444",
-                                    "owner": "root",
-                                    "group": "root"
+                                "awslogs": {
+                                    "enabled": true,
+                                    "ensureRunning": true,
+                                    "files": [ "/etc/awslogs/awslogs.conf", "/etc/awslogs/awscli.conf" ]
                                 }
-                            },
-                            "commands" : { "01_create_state_directory" : { "command" : "mkdir -p /var/awslogs/state" } },
-                            "services" : { "sysvinit" : { "awslogs"    : { "enabled" : "true", "ensureRunning" : "true", "files" : [ "/etc/awslogs/awslogs.conf" ] } } }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ECSRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Path": "/",
+                "RoleName": { "Fn::Sub": "${ClusterName}-ECSRole-${AWS::Region}" },
+                "AssumeRolePolicyDocument": "{\n    \"Statement\": [{\n        \"Action\": \"sts:AssumeRole\",\n        \"Effect\": \"Allow\",\n        \"Principal\": {\n            \"Service\": \"ec2.amazonaws.com\"\n        }\n    }]\n}\n",
+                "Policies": [{
+                    "PolicyName": "ecs-service",
+                    "PolicyDocument": "{\n    \"Statement\": [{\n        \"Effect\": \"Allow\",\n        \"Action\": [\n            \"ecs:CreateCluster\",\n            \"ecs:DeregisterContainerInstance\",\n            \"ecs:DiscoverPollEndpoint\",\n            \"ecs:Poll\",\n            \"ecs:RegisterContainerInstance\",\n            \"ecs:StartTelemetrySession\",\n            \"ecs:Submit*\",\n            \"logs:CreateLogStream\",\n            \"logs:PutLogEvents\",\n            \"ecr:BatchCheckLayerAvailability\",\n            \"ecr:BatchGetImage\",\n            \"ecr:GetDownloadUrlForLayer\",\n            \"ecr:GetAuthorizationToken\",\n            \"ssm:DescribeAssociation\",\n            \"ssm:GetDeployablePatchSnapshotForInstance\",\n            \"ssm:GetDocument\",\n            \"ssm:GetManifest\",\n            \"ssm:GetParameters\",\n            \"ssm:ListAssociations\",\n            \"ssm:ListInstanceAssociations\",\n            \"ssm:PutInventory\",\n            \"ssm:PutComplianceItems\",\n            \"ssm:PutConfigurePackageResult\",\n            \"ssm:UpdateAssociationStatus\",\n            \"ssm:UpdateInstanceAssociationStatus\",\n            \"ssm:UpdateInstanceInformation\",\n            \"ec2messages:AcknowledgeMessage\",\n            \"ec2messages:DeleteMessage\",\n            \"ec2messages:FailMessage\",\n            \"ec2messages:GetEndpoint\",\n            \"ec2messages:GetMessages\",\n            \"ec2messages:SendReply\",\n            \"cloudwatch:PutMetricData\",\n            \"ec2:DescribeInstanceStatus\",\n            \"ds:CreateComputer\",\n            \"ds:DescribeDirectories\",\n            \"logs:CreateLogGroup\",\n            \"logs:CreateLogStream\",\n            \"logs:DescribeLogGroups\",\n            \"logs:DescribeLogStreams\",\n            \"logs:PutLogEvents\",\n            \"s3:PutObject\",\n            \"s3:GetObject\",\n            \"s3:AbortMultipartUpload\",\n            \"s3:ListMultipartUploadParts\",\n            \"s3:ListBucket\",\n            \"s3:ListBucketMultipartUploads\"\n        ],\n        \"Resource\": \"*\"\n    }]\n}\n"
+                }]
+            }
+        },
+        "ECSInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    "ECSRole"
+                ]
+            }
+        },
+        "ECSServiceAutoScalingRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": {
+                        "Action": [
+                            "sts:AssumeRole"
+                        ],
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "application-autoscaling.amazonaws.com"
+                            ]
                         }
                     }
                 },
-                "Properties": {
-                    "IamInstanceProfile" : { "Ref" : "ECSIamInstanceProfile" },
-                    "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
-                    "InstanceType": { "Ref" : "InstanceType" },
-                    "SecurityGroups": [ {"Ref" : "ECSSecurityGroup"} ],
-                    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
-                        "#!/bin/bash -xe\n",
-                        "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n",
-                        "yum install -y aws-cfn-bootstrap\n",
-                        "/opt/aws/bin/cfn-init -v ",
-                        "         --stack ", { "Ref" : "AWS::StackName" },
-                        "         --resource ContainerInstance ",
-                        "         --configsets InstallAndRun ",
-                        "         --region ", { "Ref" : "AWS::Region" }, "\n"
-                    ]]}}
-                }
-            },
-            "ECSSecurityGroup" : {
-                "Type" : "AWS::EC2::SecurityGroup",
-                "Properties" : {
-                    "GroupDescription" : "Enable HTTP access via SSH",
-                    "SecurityGroupIngress" : [ { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0" } ]
-                }
-            },
-            "ECSIamInstanceProfile" : {
-                "Type" : "AWS::IAM::InstanceProfile",
-                "Properties" : {
-                    "Path" : "/",
-                    "Roles" : [{ "Ref" : "ECSRole" }]
-                }
-            },
-            "ECSLogs": {
-                "Type": "AWS::Logs::LogGroup",
-                "Properties": { "RetentionInDays": 1 }
-            },
-            "LogRole": {
-                "Type": "AWS::IAM::Role",
-                "Properties": {
-                    "AssumeRolePolicyDocument": {
-                        "Version": "2012-10-17",
-                        "Statement": [ {
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "ecs-service-autoscaling",
+                    "PolicyDocument": {
+                        "Statement": {
                             "Effect": "Allow",
-                            "Principal": { "Service": [ "ec2.amazonaws.com" ] },
-                            "Action": [ "sts:AssumeRole" ]
-                        }] 
-                    },
-                    "Path": "/",
-                    "Policies": [ {
-                        "PolicyName": "LogRolePolicy",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [ {
-                                "Effect": "Allow",
-                                "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogStreams"],
-                                "Resource": [ "arn:aws:logs:*:*:*" ]
-                            }] 
+                            "Action": [
+                                "application-autoscaling:*",
+                                "cloudwatch:DescribeAlarms",
+                                "cloudwatch:PutMetricAlarm",
+                                "ecs:DescribeServices",
+                                "ecs:UpdateService"
+                            ],
+                            "Resource": "*"
                         }
-                    }]
-                }
-            },
-            "LogRoleInstanceProfile": {
-                "Type": "AWS::IAM::InstanceProfile",
-                "Properties": {
-                    "Path": "/",
-                    "Roles": [ { "Ref": "LogRole" } ]
-                }
-            },
-            "ECSRole" : {
-                "Type" : "AWS::IAM::Role",
-                "Properties" : {
-                    "AssumeRolePolicyDocument": {
-                        "Version" : "2012-10-17",
-                        "Statement" : [ {
-                            "Effect" : "Allow",
-                            "Principal" : {
-                                "Service" : [ "ec2.amazonaws.com" ]
-                            },
-                            "Action" : [ "sts:AssumeRole" ]
-                        } ]
-                    },
-                    "Path" : "/",
-                    "Policies" : [ {
-                        "PolicyName" : "ECS",
-                        "PolicyDocument": {
-                            "Version" : "2012-10-17",
-                            "Statement" : [ {
-                                "Effect" : "Allow",
-                                "Action" : "ecs:*",
-                                "Resource" : "*"
-                            },{
-                                "Effect": "Allow",
-                                "Action": [
-                                    "s3:ListBucket",
-                                "s3:GetObject",
-                                "s3:HeadObject"
-                                ],
-                                "Resource": [ "arn:aws:s3:::cfn-config-credentials" ]
-                            }]
-                        }
-                    } ]
-                }
-            }
-        },
-        "Outputs" : {
-            "ECSInstance" : {
-                "Description" : "Location for Amazon ECS Instance",
-                "Value" : { "Fn::Join" : ["", ["ssh ec2-user@", { "Fn::GetAtt" : [ "ContainerInstance", "PublicDnsName" ]}]] }
+                    }
+                }]
             }
         }
+    },
+    "Outputs": {
+        "Cluster": {
+            "Description": "A reference to the ECS cluster",
+            "Value": "ECSCluster"
+        },
+        "ECSServiceAutoScalingRole": {
+            "Description": "A reference to ECS service auto scaling role",
+            "Value": "ECSServiceAutoScalingRole.Arn"
+        }
+    }
 }
 
