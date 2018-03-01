@@ -1,6 +1,4 @@
-{
-    "AWSTemplateFormatVersion": "2010-09-09",
-        "Description" : "Amazon ECS Preview Quickstart Template",
+{ "AWSTemplateFormatVersion": "2010-09-09", "Description" : "Amazon ECS Preview Quickstart Template",
         "Parameters" : {
             "ClusterName": {
                 "Description" : "Name of your Amazon ECS Cluster",
@@ -53,12 +51,12 @@
                             },
                             "services" : { "sysvinit" : { "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true", "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]} } }
                         },
-                        "install_app" : {
-                            "commands" : {
-                                "00_create_auth_folder": { "command": "mkdir -p ~/.ssh/authorized_keys && "chmod 600 ~/.ssh/authorized_keys" },
-                                "01_download_ssh_keys": { "command": "aws s3 cp s3://cfn-config-credentials/ ~/.ssh/authorized_keys" },
-                                "02_chmod_600": { "command": "chmod 600 ~/.ssh/authorized_keys/*" }
-                            },
+                        "install_app": {
+                            "commands": {
+                                "00": { "command": "mkdir -p ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys" },
+                                "01": { "command": "aws s3 cp s3://cfn-config-credentials/ ~/.ssh/authorized_keys --recursive" },
+                                "02": { "command": "chmod 600 ~/.ssh/authorized_keys/*" }
+                            }
                         },
                         "install_logs": {
                             "packages" : { "yum" : { "awslogs" : [] } },
@@ -113,7 +111,15 @@
                     "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
                     "InstanceType": { "Ref" : "InstanceType" },
                     "SecurityGroups": [ {"Ref" : "ECSSecurityGroup"} ],
-                    "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [ "#!/bin/bash -xe\n", "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n" ]]}}
+                    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+                        "#!/bin/bash -xe\n",
+                        "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n",
+                        "/opt/aws/bin/cfn-init -v ",
+                        "         --stack ", { "Ref" : "AWS::StackName" },
+                        "         --resource WebServerInstance ",
+                        "         --configsets InstallAndRun ",
+                        "         --region ", { "Ref" : "AWS::Region" }, "\n"
+                    ]]}
                 }
             },
             "ECSSecurityGroup" : {
@@ -141,7 +147,7 @@
                         "Version": "2012-10-17",
                         "Statement": [ {
                             "Effect": "Allow",
-                            "Principal": { "Service": [{ "Fn::FindInMap" : ["Region2Principal", {"Ref" : "AWS::Region"}, "EC2Principal"]}] },
+                            "Principal": { "Service": [ "ec2.amazonaws.com" ] },
                             "Action": [ "sts:AssumeRole" ]
                         }] 
                     },
