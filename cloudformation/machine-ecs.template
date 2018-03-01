@@ -36,10 +36,10 @@
                                     "content": { "Fn::Join" : ["", [
                                         "[cfn-auto-reloader-hook]\n",
                                         "triggers=post.update\n",
-                                        "path=Resources.WebServerInstance.Metadata.AWS::CloudFormation::Init\n",
+                                        "path=Resources.ContainerInstance.Metadata.AWS::CloudFormation::Init\n",
                                         "action=/opt/aws/bin/cfn-init -v ",
                                         "         --stack ", { "Ref" : "AWS::StackName" },
-                                        "         --resource WebServerInstance ",
+                                        "         --resource ContainerInstance ",
                                         "         --configsets install_all ",
                                         "         --region ", { "Ref" : "AWS::Region" }, "\n",
                                         "runas=root\n"
@@ -116,10 +116,10 @@
                         "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n",
                         "/opt/aws/bin/cfn-init -v ",
                         "         --stack ", { "Ref" : "AWS::StackName" },
-                        "         --resource WebServerInstance ",
+                        "         --resource ContainerInstance ",
                         "         --configsets InstallAndRun ",
                         "         --region ", { "Ref" : "AWS::Region" }, "\n"
-                    ]]}
+                    ]]}}
                 }
             },
             "ECSSecurityGroup" : {
