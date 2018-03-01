@@ -20,6 +20,12 @@
     meow "^3.7.0"
     s3urls "^1.5.2"
 
+"@mapbox/cloudfriend@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-1.9.0.tgz#e5405711c5a2da269478a1692f9c18e0b733013a"
+  dependencies:
+    aws-sdk "^2.4.11"
+
 ansi-escapes@^1.1.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-1.4.0.tgz#d3a8a83b319aa67793662b13e761c7911422306e"
@@ -51,6 +57,20 @@ async@~1.0.0:
 aws-sdk@^2.0.4, aws-sdk@^2.2.0, aws-sdk@^2.4.3:
   version "2.204.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.204.0.tgz#72d8331e90e7792b04dcca3278a7b31c49a46aeb"
+  dependencies:
+    buffer "4.9.1"
+    events "^1.1.1"
+    jmespath "0.15.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.1.0"
+    xml2js "0.4.17"
+    xmlbuilder "4.2.1"
+
+aws-sdk@^2.4.11:
+  version "2.205.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.205.0.tgz#1a93730253e2be027a4bd3af9248cbda0573de80"
   dependencies:
     buffer "4.9.1"
     events "^1.1.1"

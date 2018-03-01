@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const cf = require('@mapbox/cfn-config');
+const friend = require('@mapbox/cloudfriend');
 const path = require('path');
 const prompt = require('prompt');
 const argv = require('minimist')(process.argv, {
@@ -37,6 +38,7 @@ if (command === 'create' && argv.help) {
     console.log('Create new AWS resource from a CF Template');
     console.log('template should be in the following location:');
     console.log('  cloudformation/<reponame>.template.json');
+    console.log('  cloudformation/<reponame>.template.js');
     console.log();
     process.exit();
 } else if (command === 'update' && argv.help) {
@@ -104,14 +106,32 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
             region: creds.AWS_DEFAULT_REGION,
             configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
             templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
-        })
+        });
+
+
+        let cf_base = `${repo}.template`
+        let cf_path = false;
+        for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
+            if (file.indexOf(cf_base) === -1) continue;
+
+            if (path.parse(file).ext === '.js') {
+                cf_path = `/tmp/${repo}.template.json`;
+
+                fs.writeFileSync(cf_path, JSON.stringify(friend.build(path.resolve('./cloudformation/', file))));
+                break;
+            } else if (path.parse(file).ext === '.json') {
+                cf_base = path.resolve('./cloudformation/', file);
+            }
+        }
+
+        if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
 
         if (command === 'create') {
-            cf_cmd.create(stack, path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
+            cf_cmd.create(stack, cf_path, (err) => {
                 if (err) return console.error(`Create failed: ${err.message}`);
             });
         } else if (command === 'update') {
-            cf_cmd.update(stack, path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
+            cf_cmd.update(stack, cf_path, (err) => {
                 if (err) return console.error(`Update failed: ${err.message}`);
             });
         } else if (command === 'delete') {
