@@ -101,11 +101,13 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         })
 
         if (command === 'create') {
-            cf.cmd('create', path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
-                if (err) return console.error(`Delete failed: ${err.message}`);
+            cf_cmd.create(stack, path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
+                if (err) return console.error(`Create failed: ${err.message}`);
             });
         } else if (command === 'update') {
-
+            cf_cmd.update(stack, path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
+                if (err) return console.error(`Update failed: ${err.message}`);
+            });
         } else if (command === 'delete') {
             cf_cmd.delete(stack, (err) => {
                 if (err) return console.error(`Delete failed: ${err.message}`);
