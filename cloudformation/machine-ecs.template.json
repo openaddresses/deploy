@@ -36,7 +36,7 @@
             "Properties": {
                 "AvailabilityZones": [ "us-east-1a" ],
                 "LaunchConfigurationName": { "Ref": "ECSLaunchConfiguration" },
-                "MinSize": 0,
+                "MinSize": 1,
                 "MaxSize": { "Ref": "MaxClusterSize" },
                 "DesiredCapacity": { "Ref": "ClusterSize" },
                 "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "${ClusterName} ECS host" }, "PropagateAtLaunch": true }]
@@ -44,7 +44,7 @@
             "CreationPolicy": { "ResourceSignal": { "Timeout": "PT15M" } },
             "UpdatePolicy": {
                 "AutoScalingRollingUpdate": {
-                    "MinInstancesInService": 0,
+                    "MinInstancesInService": 1,
                     "MaxBatchSize": 3,
                     "PauseTime": "PT15M",
                     "SuspendProcesses": [ "HealthCheck", "ReplaceUnhealthy", "AZRebalance", "AlarmNotification", "ScheduledActions" ],
