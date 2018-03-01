@@ -96,13 +96,14 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         const cf_cmd = cf.commands({
             name: repo,
             region: creds.AWS_DEFAULT_REGION,
-            templatePath: path.resolve(`./cloudformatioe/${repo}.template.json`),
             configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
             templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
         })
 
         if (command === 'create') {
-
+            cf.cmd('create', path.resolve(`./cloudformation/${repo}.template.json`), (err) => {
+                if (err) return console.error(`Delete failed: ${err.message}`);
+            });
         } else if (command === 'update') {
 
         } else if (command === 'delete') {
