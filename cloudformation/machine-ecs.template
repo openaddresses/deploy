@@ -28,7 +28,6 @@
                     "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
                     "InstanceType": { "Ref" : "InstanceType" },
                     "SecurityGroups": [ {"Ref" : "ECSSecurityGroup"} ],
-                    "KeyName": { "Ref" : "KeyName" },
                     "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
                         "#!/bin/bash -xe\n",
                         "apt-get update\n",
