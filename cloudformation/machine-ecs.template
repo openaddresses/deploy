@@ -1,0 +1,106 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+        "Description" : "Amazon ECS Preview Quickstart Template",
+        "Parameters" : {
+            "ClusterName": {
+                "Description" : "Name of your Amazon ECS Cluster",
+                "Type" : "String",
+                "ConstraintDescription" : "must be a valid Amazon ECS Cluster.",
+                "Default" : "default"
+            },
+            "InstanceType" : {
+                "Description" : "Container Instance type",
+                "Type" : "String",
+                "Default" : "m3.medium",
+                "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge" ]
+                "ConstraintDescription" : "must be a valid EC2 instance type."
+            }
+        },
+        "Mappings" : {
+            "AWSInstanceType2Arch" : {
+                "m3.medium"   : { "Arch" : "HVM64"  },
+                "m3.large"    : { "Arch" : "HVM64"  },
+                "m3.xlarge"   : { "Arch" : "HVM64"  },
+            },
+
+            "AWSRegionArch2AMI" : {
+                "us-east-1"      : { "HVM64" : "ami-34ddbe5c"  }
+            }
+
+        },
+        "Resources" : {
+            "ContainerInstance" : {
+                "Type": "AWS::EC2::Instance",
+                "Properties": {
+                    "IamInstanceProfile" : { "Ref" : "ECSIamInstanceProfile" },
+                    "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                    "InstanceType": { "Ref" : "InstanceType" },
+                    "SecurityGroups": [ {"Ref" : "ECSSecurityGroup"} ],
+                    "KeyName": { "Ref" : "KeyName" },
+                    "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
+                        "#!/bin/bash -xe\n",
+                        "apt-get update\n",
+                        "apt-get install -y python-pip awscli\n"
+                        "aws s3 cp s3://cfn-config-credentials/ ~/.ssh/authorized_keys --recursive\n",
+                        "echo ECS_CLUSTER=", { "Ref" : "ClusterName" }, " >> /etc/ecs/ecs.config\n" 
+                    ]]}}
+                }
+            },
+            "ECSSecurityGroup" : {
+                "Type" : "AWS::EC2::SecurityGroup",
+                "Properties" : {
+                    "GroupDescription" : "Enable HTTP access via SSH",
+                    "SecurityGroupIngress" : [ { "IpProtocol": "tcp", "FromPort": "4200", "ToPort": "4200", "CidrIp": "0.0.0.0/0" } ]
+                }
+            },
+            "ECSIamInstanceProfile" : {
+                "Type" : "AWS::IAM::InstanceProfile",
+                "Properties" : {
+                    "Path" : "/",
+                    "Roles" : [{ "Ref" : "ECSRole" }]
+                }
+            },
+            "ECSRole" : {
+                "Type" : "AWS::IAM::Role",
+                "Properties" : {
+                    "AssumeRolePolicyDocument": {
+                        "Version" : "2012-10-17",
+                        "Statement" : [ {
+                            "Effect" : "Allow",
+                            "Principal" : {
+                                "Service" : [ "ec2.amazonaws.com" ]
+                            },
+                            "Action" : [ "sts:AssumeRole" ]
+                        } ]
+                    },
+                    "Path" : "/",
+                    "Policies" : [ {
+                        "PolicyName" : "ECS",
+                        "PolicyDocument": {
+                            "Version" : "2012-10-17",
+                            "Statement" : [ {
+                                "Effect" : "Allow",
+                                "Action" : "ecs:*",
+                                "Resource" : "*"
+                            },{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:ListBucket",
+                                    "s3:GetObject",
+                                    "s3:HeadObject"
+                                ],
+                                Resource: [ "arn:aws:s3:::cfn-config-credentials" ]
+                            }]
+                        }
+                    } ]
+                }
+            }
+        },
+        "Outputs" : {
+            "ECSInstance" : {
+                "Description" : "Location for Amazon ECS Instance",
+                "Value" : { "Fn::Join" : ["", ["ssh ec2-user@", { "Fn::GetAtt" : [ "ContainerInstance", "PublicDnsName" ]}]] }
+            }
+        }
+}
+

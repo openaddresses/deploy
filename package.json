@@ -1,0 +1,10 @@
+{
+  "name": "machine-ecs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "ingalls <ingalls@protonmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@mapbox/cfn-config": "^2.12.0"
+  }
+}
