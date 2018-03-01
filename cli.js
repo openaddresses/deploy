@@ -114,30 +114,35 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
             if (file.indexOf(cf_base) === -1) continue;
 
-            if (path.parse(file).ext === '.js') {
-                cf_path = `/tmp/${repo}.template.json`;
-
-                fs.writeFileSync(cf_path, JSON.stringify(friend.build(path.resolve('./cloudformation/', file))));
+            const ext = path.parse(file).ext;
+            if (ext === '.js' || ext === '.json') {
+                cf_path = path.resolve('./cloudformation/', file);
                 break;
-            } else if (path.parse(file).ext === '.json') {
-                cf_base = path.resolve('./cloudformation/', file);
             }
         }
 
         if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
 
-        if (command === 'create') {
-            cf_cmd.create(stack, cf_path, (err) => {
-                if (err) return console.error(`Create failed: ${err.message}`);
-            });
-        } else if (command === 'update') {
-            cf_cmd.update(stack, cf_path, (err) => {
-                if (err) return console.error(`Update failed: ${err.message}`);
-            });
-        } else if (command === 'delete') {
-            cf_cmd.delete(stack, (err) => {
-                if (err) return console.error(`Delete failed: ${err.message}`);
-            });
-        }
+        friend.build(cf_path).then(template => {
+            cf_path = `/tmp/${cf_base}.json`;
+            fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
+
+            if (command === 'create') {
+                cf_cmd.create(stack, cf_path, (err) => {
+                    if (err) return console.error(`Create failed: ${err.message}`);
+                    fs.unlink(cf_path);
+                });
+            } else if (command === 'update') {
+                cf_cmd.update(stack, cf_path, (err) => {
+                    if (err) return console.error(`Update failed: ${err.message}`);
+                    fs.unlink(cf_path);
+                });
+            } else if (command === 'delete') {
+                cf_cmd.delete(stack, (err) => {
+                    if (err) return console.error(`Delete failed: ${err.message}`);
+                    fs.unlink(cf_path);
+                });
+            }
+        });
     });
 }
