@@ -225,10 +225,6 @@
         "Cluster": {
             "Description": "A reference to the ECS cluster",
             "Value": { "Ref": "ECSCluster" }
-        },
-        "ECSServiceAutoScalingRole": {
-            "Description": "A reference to ECS service auto scaling role",
-            "Value": { "Ref": "ECSServiceAutoScalingRole.Arn" }
         }
     }
 }
