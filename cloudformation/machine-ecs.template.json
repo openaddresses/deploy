@@ -120,6 +120,39 @@
             "Properties": { "Path": "/", "Roles": [ { "Ref": "ECSRole" } ]
             }
         },
+        "TaskCreationIAM": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "TaskCreationIAM",
+                "Roles": [ { "Ref": "ECSRole" } ],
+                "PolicyDocument": {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                            "ecr:BatchCheckLayerAvailability",
+                            "ecr:BatchGetImage",
+                            "ecr:CreateRepository",
+                            "ecr:DescribeRepositories",
+                            "ecr:GetAuthorizationToken",
+                            "ecr:GetDownloadUrlForLayer",
+                            "ecr:InitiateLayerUpload",
+                            "ecr:CompleteLayerUpload",
+                            "ecr:UploadLayerPart",
+                            "ecr:PutImage"
+                        ],
+                        "Resource": "*"
+                    }]
+                }
+            }
+        },
+        "TaskCreationRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Path": "/",
+                "RoleName": "ECSRole",
+                "AssumeRolePolicyDocument": { "Statement": [{ "Action": "sts:AssumeRole", "Effect": "Allow", "Principal": { "Service": "ec2.amazonaws.com" } }] }
+            }
+        },
         "ECSIAM": {
             "Type": "AWS::IAM::Policy",
             "Properties": {
@@ -223,6 +256,14 @@
     },
     "Outputs": {
         "Cluster": {
+            "Description": "A reference to the ECS cluster",
+            "Value": { "Ref": "ECSCluster" }
+        },
+        "CI_AWS_ACCOUNT_ID": {
+            "Description": "A reference to the ECS cluster",
+            "Value": { "Ref": "ECSCluster" }
+        },
+        "CI_AWS_SECRET_ACCESS_KEY": {
             "Description": "A reference to the ECS cluster",
             "Value": { "Ref": "ECSCluster" }
         }
