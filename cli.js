@@ -72,20 +72,20 @@ if (command === 'init') {
     prompt.start();
 
     prompt.get([{
-        name: 'AWS_DEFAULT_REGION',
+        name: 'region',
         type: 'string',
         required: true,
         default: 'us-east-1'
     },{
-        name: 'AWS_ACCOUNT_ID',
+        name: 'accountId',
         type: 'string',
         required: true
     },{
-        name: 'AWS_ACCESS_KEY_ID',
+        name: 'accessKeyId',
         type: 'string',
         required: true
     },{
-        name: 'AWS_SECRET_ACCESS_KEY',
+        name: 'secretAccessKey',
         hidden: true,
         replace: '*',
         required: true,
@@ -100,7 +100,7 @@ if (command === 'init') {
     const stack = argv._[3];
     const repo = path.parse(path.resolve('.')).name;
 
-    loadCreds()
+    const creds = loadCreds()
 
     const cf_cmd = cf.commands({
         name: repo,
@@ -108,7 +108,6 @@ if (command === 'init') {
         configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
         templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
     });
-
 
     let cf_base = `${repo}.template`
     let cf_path = false;
@@ -146,6 +145,8 @@ if (command === 'init') {
         }
     });
 } else if (command === 'list') {
+    loadCreds();
+
     const cloudformation = new AWS.CloudFormation({
         region: 'us-east-1'
     });
@@ -175,34 +176,44 @@ if (command === 'init') {
         const repo = path.parse(path.resolve('.')).name;
 
         for (let stack of res.StackSummaries) {
-            if (stack.StackName.match(repo + '-')) {
+            if (stack.StackName.match(new RegExp(`^${repo}-`))) {
                 console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
             }
         }
     });
 
 } else if (command === 'info') {
+    const creds = loadCreds();
+
     const cloudformation = new AWS.CloudFormation({
         region: 'us-east-1'
     });
-
-    loadCreds();
 
     const repo = path.parse(path.resolve('.')).name;
     if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
     const stack = argv._[3];
 
-    cloudformation.describeStackInstance({
-        StackInstanceAccount: creds.AWS_ACCOUNT_ID,
-        StackInstanceRegion: creds.AWS_DEFAULT_REGION,
-        StackSetName: `${repo}-${stack}`
-    })
+    cf.lookup.info(`${repo}-${stack}`, creds.region, true, false, (err, info) => {
+        if (err) throw err;
+
+        console.log(JSON.stringify(info, null, 4));
+    });
 }
 
 function loadCreds() {
+    try {
+        AWS.config.loadFromPath(path.resolve(process.env.HOME, '.oarc.json'));
+    } catch (err) {
+        console.error('creds not set: run oa init');
+        process.exit(1);
+    }
+
     const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.oarc.json')));
 
-    for (let key of Object.keys(creds)) process.env[key] = creds[key];
+    cf.preauth({
+        accessKeyId: creds.accessKeyId,
+        secretAccessKey: creds.secretAccessKey
+    });
 
     return creds;
 }
