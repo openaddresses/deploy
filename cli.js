@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const cf = require('@mapbox/cfn-config');
+const AWS = require('aws-sdk');
 const friend = require('@mapbox/cloudfriend');
 const path = require('path');
 const prompt = require('prompt');
@@ -17,7 +18,7 @@ if (!argv._[2] || argv.help) {
     console.log();
     console.log('<command>:');
     console.log('    init      [--help]         Setup Credentials for using OA CLI');
-    console.log('    list      [--help]         NOT IMPLEMENTED: List all stack assoc. with the current repo');
+    console.log('    list      [--help]         List all stack assoc. with the current repo');
     console.log('    create    [--help]         Create a new stack of the current repo');
     console.log('    update    [--help]         Update an existing stack of the current repo');
     console.log('    delete    [--help]         Delete an existing stack of the current repo');
@@ -86,11 +87,8 @@ if (command === 'init') {
         if (err) return console.error(`oa init failed: ${err.message}`);
 
         fs.writeFileSync(path.resolve(process.env.HOME, '.oarc.json'), JSON.stringify(argv, null, 4));
-
     });
-}
-
-if (['create', 'update', 'delete'].indexOf(command) > -1) {
+} else if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
     const stack = argv._[3];
     const repo = path.parse(path.resolve('.')).name;
@@ -145,4 +143,40 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
             }
         });
     });
+} else if (command === 'list') {
+    const cloudformation = new AWS.CloudFormation({
+        region: 'us-east-1'
+    });
+
+    cloudformation.listStacks({
+        // All but "DELETE_COMPLETE"
+        StackStatusFilter: [
+          'CREATE_IN_PROGRESS',
+          'CREATE_FAILED',
+          'CREATE_COMPLETE',
+          'ROLLBACK_IN_PROGRESS',
+          'ROLLBACK_FAILED',
+          'ROLLBACK_COMPLETE',
+          'DELETE_IN_PROGRESS',
+          'DELETE_FAILED',
+          'UPDATE_IN_PROGRESS',
+          'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
+          'UPDATE_COMPLETE',
+          'UPDATE_ROLLBACK_IN_PROGRESS',
+          'UPDATE_ROLLBACK_FAILED',
+          'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
+          'UPDATE_ROLLBACK_COMPLETE'
+        ]
+    }, (err, res) => {
+        if (err) throw err;
+
+        const repo = path.parse(path.resolve('.')).name;
+
+        for (let stack of res.StackSummaries) {
+            if (stack.StackName.match(repo + '-')) {
+                console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
+            }
+        }
+    });
+
 }

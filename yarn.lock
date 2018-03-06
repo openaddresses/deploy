@@ -68,7 +68,7 @@ aws-sdk@^2.0.4, aws-sdk@^2.2.0, aws-sdk@^2.4.3:
     xml2js "0.4.17"
     xmlbuilder "4.2.1"
 
-aws-sdk@^2.4.11:
+aws-sdk@^2.205.0, aws-sdk@^2.4.11:
   version "2.205.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.205.0.tgz#1a93730253e2be027a4bd3af9248cbda0573de80"
   dependencies:
@@ -206,7 +206,7 @@ cycle@1.0.x:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/cycle/-/cycle-1.0.3.tgz#21e80b2be8580f98b468f379430662b046c34ad2"
 
-d3-queue@^3.0.2:
+d3-queue@^3.0.2, d3-queue@^3.0.7:
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/d3-queue/-/d3-queue-3.0.7.tgz#c93a2e54b417c0959129d7d73f6cf7d4292e7618"
 
