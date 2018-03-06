@@ -19,6 +19,7 @@ if (!argv._[2] || argv.help) {
     console.log('<command>:');
     console.log('    init      [--help]         Setup Credentials for using OA CLI');
     console.log('    list      [--help]         List all stack assoc. with the current repo');
+    console.log('    info      [--help]         Get information on a specific stack within the current repo');
     console.log('    create    [--help]         Create a new stack of the current repo');
     console.log('    update    [--help]         Update an existing stack of the current repo');
     console.log('    delete    [--help]         Delete an existing stack of the current repo');
@@ -58,6 +59,12 @@ if (command === 'create' && argv.help) {
     console.log();
     console.error('List all of the currently running stacks deployed from the current repo');
     console.log()
+} else if (command === 'info' && argv.help) {
+    console.log();
+    console.log('usage oa info');
+    console.log();
+    console.error('Get info about a specific stack in the current repo');
+    console.log()
 }
 
 if (command === 'init') {
@@ -93,55 +100,50 @@ if (command === 'init') {
     const stack = argv._[3];
     const repo = path.parse(path.resolve('.')).name;
 
-    fs.readFile(path.resolve(process.env.HOME, '.oarc.json'), (err, creds) => {
-        if (err) return console.error('creds not found: run oa init');
-        creds = JSON.parse(creds);
+    loadCreds()
 
-        for (let key of Object.keys(creds)) process.env[key] = creds[key];
-
-        const cf_cmd = cf.commands({
-            name: repo,
-            region: creds.AWS_DEFAULT_REGION,
-            configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
-            templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
-        });
+    const cf_cmd = cf.commands({
+        name: repo,
+        region: creds.AWS_DEFAULT_REGION,
+        configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
+        templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
+    });
 
 
-        let cf_base = `${repo}.template`
-        let cf_path = false;
-        for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
-            if (file.indexOf(cf_base) === -1) continue;
+    let cf_base = `${repo}.template`
+    let cf_path = false;
+    for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
+        if (file.indexOf(cf_base) === -1) continue;
 
-            const ext = path.parse(file).ext;
-            if (ext === '.js' || ext === '.json') {
-                cf_path = path.resolve('./cloudformation/', file);
-                break;
-            }
+        const ext = path.parse(file).ext;
+        if (ext === '.js' || ext === '.json') {
+            cf_path = path.resolve('./cloudformation/', file);
+            break;
         }
+    }
 
-        if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
+    if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
 
-        friend.build(cf_path).then(template => {
-            cf_path = `/tmp/${cf_base}.json`;
-            fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
+    friend.build(cf_path).then(template => {
+        cf_path = `/tmp/${cf_base}.json`;
+        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
-            if (command === 'create') {
-                cf_cmd.create(stack, cf_path, (err) => {
-                    if (err) return console.error(`Create failed: ${err.message}`);
-                    fs.unlink(cf_path);
-                });
-            } else if (command === 'update') {
-                cf_cmd.update(stack, cf_path, (err) => {
-                    if (err) return console.error(`Update failed: ${err.message}`);
-                    fs.unlink(cf_path);
-                });
-            } else if (command === 'delete') {
-                cf_cmd.delete(stack, (err) => {
-                    if (err) return console.error(`Delete failed: ${err.message}`);
-                    fs.unlink(cf_path);
-                });
-            }
-        });
+        if (command === 'create') {
+            cf_cmd.create(stack, cf_path, (err) => {
+                if (err) return console.error(`Create failed: ${err.message}`);
+                fs.unlink(cf_path);
+            });
+        } else if (command === 'update') {
+            cf_cmd.update(stack, cf_path, (err) => {
+                if (err) return console.error(`Update failed: ${err.message}`);
+                fs.unlink(cf_path);
+            });
+        } else if (command === 'delete') {
+            cf_cmd.delete(stack, (err) => {
+                if (err) return console.error(`Delete failed: ${err.message}`);
+                fs.unlink(cf_path);
+            });
+        }
     });
 } else if (command === 'list') {
     const cloudformation = new AWS.CloudFormation({
@@ -179,4 +181,28 @@ if (command === 'init') {
         }
     });
 
+} else if (command === 'info') {
+    const cloudformation = new AWS.CloudFormation({
+        region: 'us-east-1'
+    });
+
+    loadCreds();
+
+    const repo = path.parse(path.resolve('.')).name;
+    if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
+    const stack = argv._[3];
+
+    cloudformation.describeStackInstance({
+        StackInstanceAccount: creds.AWS_ACCOUNT_ID,
+        StackInstanceRegion: creds.AWS_DEFAULT_REGION,
+        StackSetName: `${repo}-${stack}`
+    })
+}
+
+function loadCreds() {
+    const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.oarc.json')));
+
+    for (let key of Object.keys(creds)) process.env[key] = creds[key];
+
+    return creds;
 }
