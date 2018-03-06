@@ -104,9 +104,9 @@ if (command === 'init') {
 
     const cf_cmd = cf.commands({
         name: repo,
-        region: creds.AWS_DEFAULT_REGION,
-        configBucket: `cfn-config-active-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`,
-        templateBucket: `cfn-config-templates-${creds.AWS_ACCOUNT_ID}-${creds.AWS_DEFAULT_REGION}`
+        region: creds.region,
+        configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
+        templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
     });
 
     let cf_base = `${repo}.template`
@@ -209,11 +209,7 @@ function loadCreds() {
     }
 
     const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.oarc.json')));
-
-    cf.preauth({
-        accessKeyId: creds.accessKeyId,
-        secretAccessKey: creds.secretAccessKey
-    });
+    cf.preauth(creds);
 
     return creds;
 }
