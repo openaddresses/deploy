@@ -265,11 +265,11 @@
             "Description": "A reference to the ECS cluster",
             "Value": { "Ref": "ECSCluster" }
         },
-        "CI_AWS_ACCOUNT_ID": {
+        "CIAWSACCOUNTID": {
             "Description": "AWS Creds for Docker Image CI Builder",
             "Value": { "Ref": "TaskCreationKey" }
         },
-        "CI_AWS_SECRET_ACCESS_KEY": {
+        "CIAWSSECRETACCESSKEY": {
             "Description": "AWS Creds for Docker Image CI Builder",
             "Value": { "Fn::GetAtt": [ "TaskCreationKey", "SecretAccessKey" ] }
         }
