@@ -135,9 +135,8 @@
         "TaskCreationGroup": {
             "Type": "AWS::IAM::Group",
             "Properties": {
-                "PolicyName": "TaskCreationGroup",
                 "Policies": [{
-                    "PolicyName": "TaskCreationIAMPublish",
+                    "PolicyName": "TaskCreationPublish",
                     "PolicyDocument": {
                         "Statement": [{
                             "Effect": "Allow",
