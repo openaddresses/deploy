@@ -1,12 +1,14 @@
-{
+const cf = require('@mapbox/cloudfriend');
+
+module.exports = {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description" : "Amazon ECS Preview Quickstart Template",
+    "Description" : "Machine-ECS Template",
     "Parameters" : {
         "ClusterName": {
             "Description" : "Name of your Amazon ECS Cluster",
             "Type" : "String",
             "ConstraintDescription" : "must be a valid Amazon ECS Cluster.",
-            "Default" : "default"
+            "Default" : "production"
         },
         "ClusterSize": {
             "Description": "How many ECS hosts do you want to initially deploy?",
@@ -29,17 +31,17 @@
     "Resources" : {
         "ECSCluster": {
             "Type": "AWS::ECS::Cluster",
-            "Properties": { "ClusterName": { "Ref": "ClusterName" } }
+            "Properties": { "ClusterName": cf.join('', [ 'machine-ecs-', cf.ref('ClusterName') ]) }
         },
         "ECSAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "AvailabilityZones": [ "us-east-1a" ],
-                "LaunchConfigurationName": { "Ref": "ECSLaunchConfiguration" },
+                "LaunchConfigurationName": cf.ref('ECSLaunchConfiguration'),
                 "MinSize": 1,
-                "MaxSize": { "Ref": "MaxClusterSize" },
-                "DesiredCapacity": { "Ref": "ClusterSize" },
-                "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "${ClusterName} ECS host" }, "PropagateAtLaunch": true }]
+                "MaxSize": cf.ref('MaxClusterSize'),
+                "DesiredCapacity": cf.ref('ClusterSize'),
+                "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "machine-ecs-${ClusterName} ECS host" }, "PropagateAtLaunch": true }]
             },
             "CreationPolicy": { "ResourceSignal": { "Timeout": "PT15M" } },
             "UpdatePolicy": {
@@ -57,16 +59,16 @@
             "Properties": {
                 "GroupDescription": "Access to the ECS hosts and the tasks/containers that run on them",
                 "SecurityGroupIngress":[{ "CidrIp": "0.0.0.0/0", "IpProtocol": -1 }],
-                "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "${ClusterName}-ECSHostSecurityGroup" }}]
+                "Tags": [{ "Key": "Name", "Value": { "Fn::Sub": "machine-ecs-${ClusterName}-ECSHostSecurityGroup" }}]
             }
         },
         "ECSLaunchConfiguration": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
             "Properties": {
                 "ImageId": "ami-a7a242da",
-                "InstanceType": { "Ref": "InstanceType" },
-                "SecurityGroups": [ { "Ref": "ECSHostSecurityGroup" } ],
-                "IamInstanceProfile": { "Ref": "ECSInstanceProfile" },
+                "InstanceType": cf.ref('InstanceType'),
+                "SecurityGroups": [ cf.ref('ECSHostSecurityGroup') ],
+                "IamInstanceProfile": cf.ref('ECSInstanceProfile'),
                 "UserData": {
                     "Fn::Base64": { "Fn::Sub": "#!/bin/bash\nyum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\nyum install -y aws-cfn-bootstrap\n/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSLaunchConfiguration\n/opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource ECSAutoScalingGroup\n" }
                 }
@@ -117,19 +119,19 @@
         },
         "ECSInstanceProfile": {
             "Type": "AWS::IAM::InstanceProfile",
-            "Properties": { "Path": "/", "Roles": [ { "Ref": "ECSRole" } ]
+            "Properties": { "Path": "/", "Roles": [ cf.ref('ECSRole') ]
             }
         },
         "TaskCreationUser": {
             "Type": "AWS::IAM::User",
             "Properties": {
-                "Groups": [{ "Ref": "TaskCreationGroup" }]
+                "Groups": [ cf.ref('TaskCreationGroup') ]
             }
         },
         "TaskCreationKey": {
             "Type": "AWS::IAM::AccessKey",
             "Properties": {
-                "UserName": { "Ref": "TaskCreationUser" }
+                "UserName": cf.ref('TaskCreationUser')
             }
         },
         "TaskCreationGroup": {
@@ -162,7 +164,7 @@
             "Type": "AWS::IAM::Policy",
             "Properties": {
                 "PolicyName": "ECSIAM",
-                "Roles": [ { "Ref": "ECSRole" } ],
+                "Roles": [ cf.ref('ECSRole') ],
                 "PolicyDocument": {
                     "Statement": [{
                         "Effect": "Allow",
@@ -262,11 +264,11 @@
     "Outputs": {
         "Cluster": {
             "Description": "A reference to the ECS cluster",
-            "Value": { "Ref": "ECSCluster" }
+            "Value": cf.join(['arn:aws:ecs:', cf.region, ':', cf.accountId, ':cluster/', cf.ref('ECSCluster')])
         },
         "CiAwsAccountId": {
             "Description": "AWS Creds for Docker Image CI Builder",
-            "Value": { "Ref": "TaskCreationKey" }
+            "Value": cf.ref('TaskCreationKey')
         },
         "CiAwsSecretAccessKey": {
             "Description": "AWS Creds for Docker Image CI Builder",
