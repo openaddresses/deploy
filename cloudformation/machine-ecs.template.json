@@ -121,7 +121,7 @@
             }
         },
         "TaskCreationUser": {
-            "Type": "AWS::IAM::USER",
+            "Type": "AWS::IAM::User",
             "Properties": {
                 "Groups": [{ "Ref": "TaskCreationGroup" }]
             }
