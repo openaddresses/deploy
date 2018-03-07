@@ -120,37 +120,43 @@
             "Properties": { "Path": "/", "Roles": [ { "Ref": "ECSRole" } ]
             }
         },
-        "TaskCreationIAM": {
-            "Type": "AWS::IAM::Policy",
+        "TaskCreationUser": {
+            "Type": "AWS::IAM::USER",
             "Properties": {
-                "PolicyName": "TaskCreationIAM",
-                "Roles": [ { "Ref": "ECSRole" } ],
-                "PolicyDocument": {
-                    "Statement": [{
-                        "Effect": "Allow",
-                        "Action": [
-                            "ecr:BatchCheckLayerAvailability",
-                            "ecr:BatchGetImage",
-                            "ecr:CreateRepository",
-                            "ecr:DescribeRepositories",
-                            "ecr:GetAuthorizationToken",
-                            "ecr:GetDownloadUrlForLayer",
-                            "ecr:InitiateLayerUpload",
-                            "ecr:CompleteLayerUpload",
-                            "ecr:UploadLayerPart",
-                            "ecr:PutImage"
-                        ],
-                        "Resource": "*"
-                    }]
-                }
+                "Groups": [{ "Ref": "TaskCreationGroup" }]
             }
         },
-        "TaskCreationRole": {
-            "Type": "AWS::IAM::Role",
+        "TaskCreationKey": {
+            "Type": "AWS::IAM::AccessKey",
             "Properties": {
-                "Path": "/",
-                "RoleName": "ECSRole",
-                "AssumeRolePolicyDocument": { "Statement": [{ "Action": "sts:AssumeRole", "Effect": "Allow", "Principal": { "Service": "ec2.amazonaws.com" } }] }
+                "UserName": { "Ref": "TaskCreationUser" }
+            }
+        },
+        "TaskCreationGroup": {
+            "Type": "AWS::IAM::Group",
+            "Properties": {
+                "PolicyName": "TaskCreationGroup",
+                "Policies": [{
+                    "PolicyName": "TaskCreationIAMPublish",
+                    "PolicyDocument": {
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "ecr:BatchCheckLayerAvailability",
+                                "ecr:BatchGetImage",
+                                "ecr:CreateRepository",
+                                "ecr:DescribeRepositories",
+                                "ecr:GetAuthorizationToken",
+                                "ecr:GetDownloadUrlForLayer",
+                                "ecr:InitiateLayerUpload",
+                                "ecr:CompleteLayerUpload",
+                                "ecr:UploadLayerPart",
+                                "ecr:PutImage"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+                }]
             }
         },
         "ECSIAM": {
@@ -260,12 +266,12 @@
             "Value": { "Ref": "ECSCluster" }
         },
         "CI_AWS_ACCOUNT_ID": {
-            "Description": "A reference to the ECS cluster",
-            "Value": { "Ref": "ECSCluster" }
+            "Description": "AWS Creds for Docker Image CI Builder",
+            "Value": { "Ref": "TaskCreationKey" }
         },
         "CI_AWS_SECRET_ACCESS_KEY": {
-            "Description": "A reference to the ECS cluster",
-            "Value": { "Ref": "ECSCluster" }
+            "Description": "AWS Creds for Docker Image CI Builder",
+            "Value": { "Fn::GetAtt": [ "TaskCreationKey", "SecretAccessKey" ] }
         }
     }
 }
