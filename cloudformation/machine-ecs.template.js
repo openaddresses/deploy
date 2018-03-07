@@ -2,7 +2,7 @@ const cf = require('@mapbox/cloudfriend');
 
 module.exports = {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description" : "Machine-ECS Template",
+    "Description" : "Machine-ECS Template - Host For ECS Tasks",
     "Parameters" : {
         "ClusterName": {
             "Description" : "Name of your Amazon ECS Cluster",
