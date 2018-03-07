@@ -6,6 +6,7 @@ const AWS = require('aws-sdk');
 const friend = require('@mapbox/cloudfriend');
 const path = require('path');
 const prompt = require('prompt');
+const cp = require('child_process');
 const argv = require('minimist')(process.argv, {
     boolean: ['help']
 });
@@ -129,19 +130,27 @@ if (command === 'init') {
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
         if (command === 'create') {
-            checkImage(template, (err) => {
+            checkImage(template, (err, sha) => {
                 if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
-                cf_cmd.create(stack, cf_path, (err) => {
+                cf_cmd.create(stack, cf_path, {
+                    parameters: {
+                        GitSha: sha
+                    }
+                }, (err) => {
                     if (err) return console.error(`Create failed: ${err.message}`);
                     fs.unlink(cf_path);
                 });
             });
         } else if (command === 'update') {
-            checkImage(template, (err) => {
+            checkImage(template, (err, sha) => {
                 if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
-                cf_cmd.update(stack, cf_path, (err) => {
+                cf_cmd.update(stack, cf_path, {
+                    parameters: {
+                        GitSha: sha
+                    }
+                }, (err) => {
                     if (err) return console.error(`Update failed: ${err.message}`);
                     fs.unlink(cf_path);
                 });
@@ -208,8 +217,17 @@ if (command === 'init') {
 
 function checkImage(template, cb) {
     let retries = 0;
+    const maxRetries = 5;
 
-    if (!template.Properties.GitSha) return cb();
+    if (!template.Parameters.GitSha) return cb();
+
+    const git = cp.spawnSync('git', [
+        '--git-dir', path.resolve('.', '.git'),
+        'rev-parse', 'HEAD'
+    ]);
+
+    if (!git.stdout) return cb(new Error('Is this a git repo? Could not determine GitSha'));
+    const sha = String(git.stdout).replace(/\n/g, '');
 
     check();
 
@@ -217,19 +235,19 @@ function checkImage(template, cb) {
         const ecr = new AWS.ECR({ region: 'us-east-1' });
 
         ecr.batchGetImage({
-            imageIds: [{ imageTag: template.Properties.GitSha }],
+            imageIds: [{ imageTag: sha  }],
             repositoryName: repo
         }, (err, data) => {
             if (err) return cb(err);
 
             if (data && data.images.length) {
-                return cb();
+                return cb(null, sha);
             } else if (retries < maxRetries) {
-                if (retries === 0) console.log('Waiting for image');
+                if (retries === 0) console.log(`Waiting for Docker Image: AWS::ECR: ${repo}/${sha}`);
                 retries += 1;
                 setTimeout(check, 2000);
             } else {
-                return cb(new Error('No image found for commit ' + template.Properties.GitSha));
+                return cb(new Error('No image found for commit ' + sha ));
             }
         });
     }
