@@ -67,6 +67,8 @@ if (command === 'create' && argv.help) {
     console.log()
 }
 
+const repo = path.parse(path.resolve('.')).name;
+
 if (command === 'init') {
     prompt.message = '$';
     prompt.start();
@@ -98,7 +100,6 @@ if (command === 'init') {
 } else if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
     const stack = argv._[3];
-    const repo = path.parse(path.resolve('.')).name;
 
     const creds = loadCreds()
 
@@ -128,14 +129,22 @@ if (command === 'init') {
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
         if (command === 'create') {
-            cf_cmd.create(stack, cf_path, (err) => {
-                if (err) return console.error(`Create failed: ${err.message}`);
-                fs.unlink(cf_path);
+            checkImage(template, (err) => {
+                if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
+
+                cf_cmd.create(stack, cf_path, (err) => {
+                    if (err) return console.error(`Create failed: ${err.message}`);
+                    fs.unlink(cf_path);
+                });
             });
         } else if (command === 'update') {
-            cf_cmd.update(stack, cf_path, (err) => {
-                if (err) return console.error(`Update failed: ${err.message}`);
-                fs.unlink(cf_path);
+            checkImage(template, (err) => {
+                if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
+
+                cf_cmd.update(stack, cf_path, (err) => {
+                    if (err) return console.error(`Update failed: ${err.message}`);
+                    fs.unlink(cf_path);
+                });
             });
         } else if (command === 'delete') {
             cf_cmd.delete(stack, (err) => {
@@ -173,8 +182,6 @@ if (command === 'init') {
     }, (err, res) => {
         if (err) throw err;
 
-        const repo = path.parse(path.resolve('.')).name;
-
         for (let stack of res.StackSummaries) {
             if (stack.StackName.match(new RegExp(`^${repo}-`))) {
                 console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
@@ -189,7 +196,6 @@ if (command === 'init') {
         region: 'us-east-1'
     });
 
-    const repo = path.parse(path.resolve('.')).name;
     if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
     const stack = argv._[3];
 
@@ -198,6 +204,35 @@ if (command === 'init') {
 
         console.log(JSON.stringify(info, null, 4));
     });
+}
+
+function checkImage(template, cb) {
+    let retries = 0;
+
+    if (!template.Properties.GitSha) return cb();
+
+    check();
+
+    function check() {
+        const ecr = new AWS.ECR({ region: 'us-east-1' });
+
+        ecr.batchGetImage({
+            imageIds: [{ imageTag: template.Properties.GitSha }],
+            repositoryName: repo
+        }, (err, data) => {
+            if (err) return cb(err);
+
+            if (data && data.images.length) {
+                return cb();
+            } else if (retries < maxRetries) {
+                if (retries === 0) console.log('Waiting for image');
+                retries += 1;
+                setTimeout(check, 2000);
+            } else {
+                return cb(new Error('No image found for commit ' + template.Properties.GitSha));
+            }
+        });
+    }
 }
 
 function loadCreds() {
