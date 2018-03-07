@@ -266,7 +266,7 @@ module.exports = {
             "Description": "A reference to the ECS cluster",
             "Value": cf.join(['arn:aws:ecs:', cf.region, ':', cf.accountId, ':cluster/', cf.ref('ECSCluster')])
         },
-        "CiAwsAccountId": {
+        "CiAwsAccessKeyId": {
             "Description": "AWS Creds for Docker Image CI Builder",
             "Value": cf.ref('TaskCreationKey')
         },
