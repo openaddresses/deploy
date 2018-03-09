@@ -45,7 +45,7 @@ module.exports = {
                 "EvaluationPeriods" : "1",
                 "Threshold" : "50",
                 "ComparisonOperator" : "GreaterThanThreshold",
-                "Dimensions" : [ { "Name" : "ECSAutoScalingGroup" , "Value": cf.ref('ECSAutoScalingGroup') } ]
+                "Dimensions" : [ { "Name" : "ClusterName" , "Value": cf.ref('ECSCluster') } ]
             }
         },
         "ECSScaleUpPolicy": {
