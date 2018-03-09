@@ -33,6 +33,31 @@ module.exports = {
             "Type": "AWS::ECS::Cluster",
             "Properties": { "ClusterName": cf.join('', [ 'machine-ecs-', cf.ref('ClusterName') ]) }
         },
+        "ECSScaleUpAlarm": {
+            "Type" : "AWS::CloudWatch::Alarm",
+            "Properties" : {
+                "AlarmDescription" : "Scale Up when CPU placement limits are hit",
+                "AlarmActions" : [ cf.ref('ECSScaleUpPolicy') ],
+                "MetricName" : "CPUReservation",
+                "Namespace" : "AWS/ECS",
+                "Statistic" : "Average",
+                "Period" : "60",
+                "EvaluationPeriods" : "1",
+                "Threshold" : "50",
+                "ComparisonOperator" : "GreaterThanThreshold",
+                "Dimensions" : [ { "Name" : "ECSAutoScalingGroup" , "Value": cf.ref('ECSAutoScalingGroup') } ]
+            }
+        },
+        "ECSScaleUpPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType" : "ChangeInCapacity",
+                "PolicyType" : "SimpleScaling", 
+                "Cooldown" : "60",
+                "AutoScalingGroupName": cf.ref('ECSAutoScalingGroup'),
+                "ScalingAdjustment" : 2
+            }
+        },
         "ECSAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
@@ -124,15 +149,11 @@ module.exports = {
         },
         "TaskCreationUser": {
             "Type": "AWS::IAM::User",
-            "Properties": {
-                "Groups": [ cf.ref('TaskCreationGroup') ]
-            }
+            "Properties": { "Groups": [ cf.ref('TaskCreationGroup') ] }
         },
         "TaskCreationKey": {
             "Type": "AWS::IAM::AccessKey",
-            "Properties": {
-                "UserName": cf.ref('TaskCreationUser')
-            }
+            "Properties": { "UserName": cf.ref('TaskCreationUser') }
         },
         "TaskCreationGroup": {
             "Type": "AWS::IAM::Group",
@@ -220,7 +241,7 @@ module.exports = {
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "Path": "/",
-                "RoleName": "ECSRole",
+                "RoleName": cf.join([cf.ref('ECSCluster'), '-ECSRole']),
                 "AssumeRolePolicyDocument": { "Statement": [{ "Action": "sts:AssumeRole", "Effect": "Allow", "Principal": { "Service": "ec2.amazonaws.com" } }] }
             }
         },
@@ -230,15 +251,9 @@ module.exports = {
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": {
-                        "Action": [
-                            "sts:AssumeRole"
-                        ],
+                        "Action": [ "sts:AssumeRole" ],
                         "Effect": "Allow",
-                        "Principal": {
-                            "Service": [
-                                "application-autoscaling.amazonaws.com"
-                            ]
-                        }
+                        "Principal": { "Service": [ "application-autoscaling.amazonaws.com" ] }
                     }
                 },
                 "Path": "/",
@@ -247,13 +262,7 @@ module.exports = {
                     "PolicyDocument": {
                         "Statement": {
                             "Effect": "Allow",
-                            "Action": [
-                                "application-autoscaling:*",
-                                "cloudwatch:DescribeAlarms",
-                                "cloudwatch:PutMetricAlarm",
-                                "ecs:DescribeServices",
-                                "ecs:UpdateService"
-                            ],
+                            "Action": [ "application-autoscaling:*", "cloudwatch:DescribeAlarms", "cloudwatch:PutMetricAlarm", "ecs:DescribeServices", "ecs:UpdateService" ],
                             "Resource": "*"
                         }
                     }
