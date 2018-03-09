@@ -33,7 +33,7 @@ module.exports = {
             "Type": "AWS::ECS::Cluster",
             "Properties": { "ClusterName": cf.join('', [ 'machine-ecs-', cf.ref('ClusterName') ]) }
         },
-        "ECSScaleUpAlarm": {
+        "ECSCPUScaleUpAlarm": {
             "Type" : "AWS::CloudWatch::Alarm",
             "Properties" : {
                 "AlarmDescription" : "Scale Up when CPU placement limits are hit",
@@ -46,6 +46,31 @@ module.exports = {
                 "Threshold" : "50",
                 "ComparisonOperator" : "GreaterThanThreshold",
                 "Dimensions" : [ { "Name" : "ClusterName" , "Value": cf.ref('ECSCluster') } ]
+            }
+        },
+        "ECSCPUScaleDownAlarm": {
+            "Type" : "AWS::CloudWatch::Alarm",
+            "Properties" : {
+                "AlarmDescription" : "Scale Down when CPU Placement Util is low",
+                "AlarmActions" : [ cf.ref('ECSScaleDownPolicy') ],
+                "MetricName" : "CPUReservation",
+                "Namespace" : "AWS/ECS",
+                "Statistic" : "Average",
+                "Period" : "180",
+                "EvaluationPeriods" : "2",
+                "Threshold" : "50",
+                "ComparisonOperator" : "LessThanThreshold",
+                "Dimensions" : [ { "Name" : "ClusterName" , "Value": cf.ref('ECSCluster') } ]
+            }
+        },
+        "ECSScaleDownPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType" : "ChangeInCapacity",
+                "PolicyType" : "SimpleScaling", 
+                "Cooldown" : "60",
+                "AutoScalingGroupName": cf.ref('ECSAutoScalingGroup'),
+                "ScalingAdjustment" : -1
             }
         },
         "ECSScaleUpPolicy": {
