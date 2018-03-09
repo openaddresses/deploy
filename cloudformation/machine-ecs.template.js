@@ -56,7 +56,7 @@ module.exports = {
                 "MetricName" : "CPUReservation",
                 "Namespace" : "AWS/ECS",
                 "Statistic" : "Average",
-                "Period" : "180",
+                "Period" : "60",
                 "EvaluationPeriods" : "2",
                 "Threshold" : "50",
                 "ComparisonOperator" : "LessThanThreshold",
