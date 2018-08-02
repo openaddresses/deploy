@@ -20,9 +20,9 @@
     meow "^3.7.0"
     s3urls "^1.5.2"
 
-"@mapbox/cloudfriend@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-1.9.0.tgz#e5405711c5a2da269478a1692f9c18e0b733013a"
+"@mapbox/cloudfriend@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-2.0.0.tgz#0b69d11ab37cc394337239eab72a8690e4975904"
   dependencies:
     aws-sdk "^2.4.11"
 
