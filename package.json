@@ -8,7 +8,7 @@
     "oa": "cli.js"
   },
   "dependencies": {
-    "@mapbox/cfn-config": "^2.12.0",
+    "@mapbox/cfn-config": "^2.17.0",
     "@mapbox/cloudfriend": "^2.0.0",
     "aws-sdk": "^2.205.0",
     "d3-queue": "^3.0.7",
