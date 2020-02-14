@@ -1,8 +1,9 @@
 {
-  "name": "machine-ecs",
+  "name": "deploy",
   "version": "1.0.0",
   "main": "index.js",
   "author": "ingalls <ingalls@protonmail.com>",
+  "private": true,
   "license": "MIT",
   "bin": {
     "oa": "cli.js"
