@@ -1,12 +1,11 @@
-<h1 align="center">Machine-ECS</h1>
+<h1 align="center">Deploy</h1>
 
-<p align="center">ECS Cluster Creation & OpenAddresses Deploy Tools for Cloudformation</p>
+<p align="center">OpenAddresses Deploy Tools for Cloudformation</p>
 
 ## Brief
 
 - Store and manage OpenAddresses AWS creds locally
 - Create, Update, & Delete CF based stacks from the terminal
-- CF templates to manage underlying ECS Infrastructure
 
 ## Install
 
