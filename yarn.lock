@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@mapbox/cfn-config@^2.17.0":
-  version "2.20.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/cfn-config/-/cfn-config-2.20.1.tgz#3d0ed54b75540ce20d20bb08d7d6fbeffb2a20db"
-  integrity sha512-g+fP2+Y7DyUpaJ34RdE4g3CYno04L9XYus2svApM/qyWOCiaHCyw4IrfcicUT7wymxhS4OjAiBY6IZF4PKxf8Q==
+"@mapbox/cfn-config@^2.22.0":
+  version "2.22.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/cfn-config/-/cfn-config-2.22.0.tgz#18a20c3620c36680614576b1ab2c7e7efa6ea995"
+  integrity sha512-jxg7uSUOGMIAPoYsgH4tCOTzT55ufV3E1UfjsQqbzicoS8+yi4bptTLpeR7aflV3BACKbFOT4pUH38JCybZAVg==
   dependencies:
     aws-sdk "^2.288.0"
     cfn-stack-event-stream "^1.0.1"
@@ -21,10 +21,10 @@
     meow "^5.0.0"
     s3urls "^1.5.2"
 
-"@mapbox/cloudfriend@^2.0.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-2.3.0.tgz#ae44911129d1776a099e1819294c5a9117a49e07"
-  integrity sha512-ernH/r7wlea+l4qcAsN4GEKlpPwT7feZIc0caQjPaw/rHvZcVBmMvvYv0xq2/DIEPndqIR3q9kZ1J0jpjmWwvQ==
+"@mapbox/cloudfriend@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-4.0.0.tgz#0c2038120d74f0e052159cfe0cfdc8f043213ac9"
+  integrity sha512-HDDIS8J3J+5pOGFD+4uW6e/9o/vDWFhJpNquceze0PFX7JXDgtOmMsVJwtRUvQD5JJtS/Hk2qRfpVAlL3OajRw==
   dependencies:
     aws-sdk "^2.4.11"
     minimist "^1.2.0"
@@ -67,7 +67,7 @@ async@~1.0.0:
   resolved "https://registry.yarnpkg.com/async/-/async-1.0.0.tgz#f8fc04ca3a13784ade9e1641af98578cfbd647a9"
   integrity sha1-+PwEyjoTeErenhZBr5hXjPvWR6k=
 
-aws-sdk@^2.0.4, aws-sdk@^2.205.0, aws-sdk@^2.288.0, aws-sdk@^2.335.0, aws-sdk@^2.4.11:
+aws-sdk@^2.0.4, aws-sdk@^2.288.0, aws-sdk@^2.335.0, aws-sdk@^2.4.11:
   version "2.339.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.339.0.tgz#869ce594b87854c723c6157c2a56f101334ce258"
   integrity sha512-ScEfOR/JhtDuCVPkwB3mMLDgo8YrcSpFpHmoZLRNbefrQ9yTI+zTJqTrdeArNdwOLLoc/yCbqgHRQfXUCcfyfQ==
@@ -80,6 +80,21 @@ aws-sdk@^2.0.4, aws-sdk@^2.205.0, aws-sdk@^2.288.0, aws-sdk@^2.335.0, aws-sdk@^2
     sax "1.2.1"
     url "0.10.3"
     uuid "3.1.0"
+    xml2js "0.4.19"
+
+aws-sdk@^2.618.0:
+  version "2.618.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.618.0.tgz#628d4d3bdd5024ce0701ff74713e5be0a2ffd803"
+  integrity sha512-GlwR9Eeolhm/D6NFuJosyatsdDeIeV68VRkACwt2v81seFGT7QAtpcRN72ZzVxLbeXSTMRgb6axJK17CS5whKw==
+  dependencies:
+    buffer "4.9.1"
+    events "1.1.1"
+    ieee754 "1.1.13"
+    jmespath "0.15.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.3.2"
     xml2js "0.4.19"
 
 balanced-match@^1.0.0:
@@ -378,6 +393,11 @@ iconv-lite@^0.4.24:
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
+
+ieee754@1.1.13:
+  version "1.1.13"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.13.tgz#ec168558e95aa181fd87d37f55c32bbcb6708b84"
+  integrity sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==
 
 ieee754@1.1.8:
   version "1.1.8"
@@ -927,6 +947,11 @@ uuid@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
   integrity sha512-DIWtzUkw04M4k3bf1IcpS2tngXEL26YUD2M0tMDUpnUrz2hgzUBlD55a4FjdLGPvfHxS6uluGWvaVEqgBcVa+g==
+
+uuid@3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
+  integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
