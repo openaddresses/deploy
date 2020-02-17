@@ -13,9 +13,9 @@ const argv = require('minimist')(process.argv, {
 
 if (!argv._[2] || argv.help) {
     console.log();
-    console.log('usage: oa <command> [--version] [--help]');
+    console.log('usage: deploy <command> [--version] [--help]');
     console.log()
-    console.log('Create, manage and delete OpenAddresses Cloud Resouces from the CLI');
+    console.log('Create, manage and delete Cloudformation Resouces from the CLI');
     console.log();
     console.log('<command>:');
     console.log('    init      [--help]         Setup Credentials for using OA CLI');
@@ -36,7 +36,7 @@ const command = argv._[2];
 
 if (command === 'create' && argv.help) {
     console.log();
-    console.log('usage oa create <STACK>');
+    console.log('usage deploy create <STACK>');
     console.log();
     console.log('Create new AWS resource from a CF Template');
     console.log('template should be in the following location:');
@@ -46,23 +46,23 @@ if (command === 'create' && argv.help) {
     process.exit();
 } else if (command === 'update' && argv.help) {
     console.log();
-    console.log('usage oa update <STACK>');
+    console.log('usage deploy update <STACK>');
     console.log()
     process.exit();
 } else if (command === 'delete' && argv.help) {
     console.log();
-    console.log('usage oa delete <STACK>');
+    console.log('usage deploy delete <STACK>');
     console.log()
     process.exit();
 } else if (command === 'list' && argv.help) {
     console.log();
-    console.log('usage oa list');
+    console.log('usage deploy list');
     console.log();
     console.error('List all of the currently running stacks deployed from the current repo');
     console.log()
 } else if (command === 'info' && argv.help) {
     console.log();
-    console.log('usage oa info');
+    console.log('usage deploy info');
     console.log();
     console.error('Get info about a specific stack in the current repo');
     console.log()
@@ -94,12 +94,12 @@ if (command === 'init') {
         required: true,
         type: 'string'
     }], (err, argv) => {
-        if (err) return console.error(`oa init failed: ${err.message}`);
+        if (err) return console.error(`deploy init failed: ${err.message}`);
 
-        fs.writeFileSync(path.resolve(process.env.HOME, '.oarc.json'), JSON.stringify(argv, null, 4));
+        fs.writeFileSync(path.resolve(process.env.HOME, '.deployrc.json'), JSON.stringify(argv, null, 4));
     });
 } else if (['create', 'update', 'delete'].indexOf(command) > -1) {
-    if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
+    if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
     const creds = loadCreds()
@@ -139,7 +139,7 @@ if (command === 'init') {
                     }
                 }, (err) => {
                     if (err) return console.error(`Create failed: ${err.message}`);
-                    fs.unlink(cf_path);
+                    fs.unlinkSync(cf_path);
                 });
             });
         } else if (command === 'update') {
@@ -152,13 +152,13 @@ if (command === 'init') {
                     }
                 }, (err) => {
                     if (err) return console.error(`Update failed: ${err.message}`);
-                    fs.unlink(cf_path);
+                    fs.unlinkSync(cf_path);
                 });
             });
         } else if (command === 'delete') {
             cf_cmd.delete(stack, (err) => {
                 if (err) return console.error(`Delete failed: ${err.message}`);
-                fs.unlink(cf_path);
+                fs.unlinkSync(cf_path);
             });
         }
     });
@@ -205,7 +205,7 @@ if (command === 'init') {
         region: 'us-east-1'
     });
 
-    if (!argv._[3]) return console.error(`Stack name required: run oa ${command} --help`);
+    if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
     cf.lookup.info(`${repo}-${stack}`, creds.region, true, false, (err, info) => {
@@ -255,13 +255,13 @@ function checkImage(template, cb) {
 
 function loadCreds() {
     try {
-        AWS.config.loadFromPath(path.resolve(process.env.HOME, '.oarc.json'));
+        AWS.config.loadFromPath(path.resolve(process.env.HOME, '.deployrc.json'));
     } catch (err) {
-        console.error('creds not set: run oa init');
+        console.error('creds not set: run deploy init');
         process.exit(1);
     }
 
-    const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.oarc.json')));
+    const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.deployrc.json')));
     cf.preauth(creds);
 
     return creds;

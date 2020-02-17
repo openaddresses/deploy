@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "bin": {
-    "oa": "cli.js"
+    "deploy": "cli.js"
   },
   "dependencies": {
     "@mapbox/cfn-config": "^2.22.0",
