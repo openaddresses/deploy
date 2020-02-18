@@ -13,12 +13,12 @@ const argv = require('minimist')(process.argv, {
 
 if (!argv._[2] || argv.help) {
     console.log();
-    console.log('usage: deploy <command> [--version] [--help]');
+    console.log('usage: deploy <command> [--profile] [--version] [--help]');
     console.log()
     console.log('Create, manage and delete Cloudformation Resouces from the CLI');
     console.log();
     console.log('<command>:');
-    console.log('    init      [--help]         Setup Credentials for using OA CLI');
+    console.log('    init      [--help]         Setup Credentials for a new AWS Account');
     console.log('    list      [--help]         List all stack assoc. with the current repo');
     console.log('    info      [--help]         Get information on a specific stack within the current repo');
     console.log('    create    [--help]         Create a new stack of the current repo');
@@ -75,6 +75,11 @@ if (command === 'init') {
     prompt.start();
 
     prompt.get([{
+        name: 'profile',
+        type: 'string',
+        required: true,
+        default: 'default'
+    },{
         name: 'region',
         type: 'string',
         required: true,
@@ -96,126 +101,144 @@ if (command === 'init') {
     }], (err, argv) => {
         if (err) return console.error(`deploy init failed: ${err.message}`);
 
-        fs.writeFileSync(path.resolve(process.env.HOME, '.deployrc.json'), JSON.stringify(argv, null, 4));
+        fs.readFile(path.resolve(process.env.HOME, '.deployrc.json'), (err, creds) => {
+            creds = JSON.parse(creds);
+
+            if (err) creds = {}
+
+            creds[argv.profile] = {
+                region: argv.region,
+                accountId: argv.accountId,
+                accessKeyId: argv.accessKeyId,
+                secretAccessKey: argv.secretAccessKey
+            };
+
+            fs.writeFileSync(path.resolve(process.env.HOME, '.deployrc.json'), JSON.stringify(creds, null, 4));
+        });
     });
 } else if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
-    const creds = loadCreds()
-
-    const cf_cmd = cf.commands({
-        name: repo,
-        region: creds.region,
-        configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
-        templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
-    });
-
-    let cf_base = `${repo}.template`
-    let cf_path = false;
-    for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
-        if (file.indexOf(cf_base) === -1) continue;
-
-        const ext = path.parse(file).ext;
-        if (ext === '.js' || ext === '.json') {
-            cf_path = path.resolve('./cloudformation/', file);
-            break;
-        }
-    }
-
-    if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
-
-    friend.build(cf_path).then(template => {
-        cf_path = `/tmp/${cf_base}.json`;
-        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
-
-        if (command === 'create') {
-            checkImage(template, (err, sha) => {
-                if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
-
-                cf_cmd.create(stack, cf_path, {
-                    parameters: {
-                        GitSha: sha
-                    }
-                }, (err) => {
-                    if (err) return console.error(`Create failed: ${err.message}`);
-                    fs.unlinkSync(cf_path);
-                });
-            });
-        } else if (command === 'update') {
-            checkImage(template, (err, sha) => {
-                if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
-
-                cf_cmd.update(stack, cf_path, {
-                    parameters: {
-                        GitSha: sha
-                    }
-                }, (err) => {
-                    if (err) return console.error(`Update failed: ${err.message}`);
-                    fs.unlinkSync(cf_path);
-                });
-            });
-        } else if (command === 'delete') {
-            cf_cmd.delete(stack, (err) => {
-                if (err) return console.error(`Delete failed: ${err.message}`);
-                fs.unlinkSync(cf_path);
-            });
-        }
-    });
-} else if (command === 'list') {
-    loadCreds();
-
-    const cloudformation = new AWS.CloudFormation({
-        region: 'us-east-1'
-    });
-
-    cloudformation.listStacks({
-        // All but "DELETE_COMPLETE"
-        StackStatusFilter: [
-          'CREATE_IN_PROGRESS',
-          'CREATE_FAILED',
-          'CREATE_COMPLETE',
-          'ROLLBACK_IN_PROGRESS',
-          'ROLLBACK_FAILED',
-          'ROLLBACK_COMPLETE',
-          'DELETE_IN_PROGRESS',
-          'DELETE_FAILED',
-          'UPDATE_IN_PROGRESS',
-          'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
-          'UPDATE_COMPLETE',
-          'UPDATE_ROLLBACK_IN_PROGRESS',
-          'UPDATE_ROLLBACK_FAILED',
-          'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
-          'UPDATE_ROLLBACK_COMPLETE'
-        ]
-    }, (err, res) => {
+    loadCreds(argv, (err, creds) => {
         if (err) throw err;
 
-        for (let stack of res.StackSummaries) {
-            if (stack.StackName.match(new RegExp(`^${repo}-`))) {
-                console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
+        const cf_cmd = cf.commands({
+            name: repo,
+            region: creds.region,
+            configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
+            templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
+        });
+
+        let cf_base = `${repo}.template`
+        let cf_path = false;
+        for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
+            if (file.indexOf(cf_base) === -1) continue;
+
+            const ext = path.parse(file).ext;
+            if (ext === '.js' || ext === '.json') {
+                cf_path = path.resolve('./cloudformation/', file);
+                break;
             }
         }
-    });
 
-} else if (command === 'info') {
-    const creds = loadCreds();
+        if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
 
-    const cloudformation = new AWS.CloudFormation({
-        region: 'us-east-1'
-    });
+        friend.build(cf_path).then(template => {
+            cf_path = `/tmp/${cf_base}.json`;
+            fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
-    if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
-    const stack = argv._[3];
+            if (command === 'create') {
+                checkImage(creds, template, (err, sha) => {
+                    if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
-    cf.lookup.info(`${repo}-${stack}`, creds.region, true, false, (err, info) => {
+                    cf_cmd.create(stack, cf_path, {
+                        parameters: {
+                            GitSha: sha
+                        }
+                    }, (err) => {
+                        if (err) return console.error(`Create failed: ${err.message}`);
+                        fs.unlinkSync(cf_path);
+                    });
+                });
+            } else if (command === 'update') {
+                checkImage(creds, template, (err, sha) => {
+                    if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
+
+                    cf_cmd.update(stack, cf_path, {
+                        parameters: {
+                            GitSha: sha
+                        }
+                    }, (err) => {
+                        if (err) return console.error(`Update failed: ${err.message}`);
+                        fs.unlinkSync(cf_path);
+                    });
+                });
+            } else if (command === 'delete') {
+                cf_cmd.delete(stack, (err) => {
+                    if (err) return console.error(`Delete failed: ${err.message}`);
+                    fs.unlinkSync(cf_path);
+                });
+            }
+        });
+    })
+} else if (command === 'list') {
+    loadCreds(argv, (err, creds) => {
         if (err) throw err;
 
-        console.log(JSON.stringify(info, null, 4));
+        const cloudformation = new AWS.CloudFormation({
+            region: creds.region
+        });
+
+        cloudformation.listStacks({
+            // All but "DELETE_COMPLETE"
+            StackStatusFilter: [
+              'CREATE_IN_PROGRESS',
+              'CREATE_FAILED',
+              'CREATE_COMPLETE',
+              'ROLLBACK_IN_PROGRESS',
+              'ROLLBACK_FAILED',
+              'ROLLBACK_COMPLETE',
+              'DELETE_IN_PROGRESS',
+              'DELETE_FAILED',
+              'UPDATE_IN_PROGRESS',
+              'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
+              'UPDATE_COMPLETE',
+              'UPDATE_ROLLBACK_IN_PROGRESS',
+              'UPDATE_ROLLBACK_FAILED',
+              'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
+              'UPDATE_ROLLBACK_COMPLETE'
+            ]
+        }, (err, res) => {
+            if (err) throw err;
+
+            for (let stack of res.StackSummaries) {
+                if (stack.StackName.match(new RegExp(`^${repo}-`))) {
+                    console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
+                }
+            }
+        });
+    });
+} else if (command === 'info') {
+    loadCreds(argv, (err, creds) => {
+        if (err) throw err;
+
+        const cloudformation = new AWS.CloudFormation({
+            region: creds.region
+        });
+
+        if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
+        const stack = argv._[3];
+
+        cf.lookup.info(`${repo}-${stack}`, creds.region, true, false, (err, info) => {
+            if (err) throw err;
+
+            console.log(JSON.stringify(info, null, 4));
+        });
     });
 }
 
-function checkImage(template, cb) {
+function checkImage(creds, template, cb) {
     let retries = 0;
     const maxRetries = 5;
 
@@ -232,7 +255,7 @@ function checkImage(template, cb) {
     check();
 
     function check() {
-        const ecr = new AWS.ECR({ region: 'us-east-1' });
+        const ecr = new AWS.ECR({ region: creds.region });
 
         ecr.batchGetImage({
             imageIds: [{ imageTag: sha  }],
@@ -253,16 +276,39 @@ function checkImage(template, cb) {
     }
 }
 
-function loadCreds() {
-    try {
-        AWS.config.loadFromPath(path.resolve(process.env.HOME, '.deployrc.json'));
-    } catch (err) {
-        console.error('creds not set: run deploy init');
-        process.exit(1);
-    }
+function loadCreds(argv, cb) {
+    fs.readFile(path.resolve(process.env.HOME, '.deployrc.json'), (err, creds) => {
+        if (err) return cb(new Error('No creds found - run "deploy init"'));
 
-    const creds = JSON.parse(fs.readFileSync(path.resolve(process.env.HOME, '.deployrc.json')));
-    cf.preauth(creds);
+        creds = JSON.parse(creds);
+        let override;
 
-    return creds;
+        try {
+            override = JSON.parse(fs.readFileSync('.deploy'));
+        } catch (err) {
+              override = {};
+        }
+
+        if (argv.profile) {
+            if (!creds[argv.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
+            creds = creds[argv.profile];
+        } else if (override.profile) {
+            if (!creds[override.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
+            creds = creds[override.profile];
+        } else if (Object.keys(creds).length > 1) {
+            return cb(new Error('Multiple deploy profiles found. Deploy with --profile or set a .deploy file'));
+        } else {
+            creds = Object.keys(creds)[0];
+        }
+
+        try {
+            AWS.config.credentials = new AWS.Credentials(creds);
+        } catch (err) {
+            return cb(new Error('creds not set: run deploy init'));
+        }
+
+        cf.preauth(creds);
+
+        return cb(null, creds);
+    });
 }
