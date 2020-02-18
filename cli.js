@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 const fs = require('fs');
+const schema = require('./data/cf_schema.json');
 const cf = require('@mapbox/cfn-config');
 const AWS = require('aws-sdk');
 const friend = require('@mapbox/cloudfriend');
@@ -295,7 +296,16 @@ function tagger(template, tags) {
     if (!tags || !tags.length) return template;
 
     for (const name of Object.keys(template.Resources)) {
-        if (!template.Resources[name].Properties) continue;
+        if (
+            !template.Resources[name].Type
+            || !schema.ResourceTypes[template.Resources[name].Type]
+            || !schema.ResourceTypes[template.Resources[name].Type].Properties
+            || !schema.ResourceTypes[template.Resources[name].Type].Properties.Tags
+        ) return template;
+
+        if (!template.Resources[name].Properties) {
+            template.Resources[name].Properties = {};
+        };
 
         if (!template.Resources[name].Properties.Tags) {
             template.Resources[name].Properties.Tags = [];
