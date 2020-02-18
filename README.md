@@ -4,7 +4,7 @@
 
 ## Brief
 
-- Store and manage OpenAddresses AWS creds locally
+- Store and manage AWS creds locally for one or more AWS accounts
 - Create, Update, & Delete CF based stacks from the terminal
 
 ## Install
@@ -17,14 +17,16 @@ yarn install
 yarn link
 ```
 
+This will make the `deploy` command avaliable globally
+
 ### Auth Setup
 
-Before you can make changes to any of the underlying infrastructure you must first authenticate the oa cli
+Before you can make changes to any of the underlying infrastructure you must first authenticate the deploy cli
 
 To do so run:
 
 ```
-oa init
+ init
 ```
 
 and follow the prompts for your credentials.
@@ -32,7 +34,27 @@ and follow the prompts for your credentials.
 Once finished run
 
 ```
-oa
+deploy
 ```
 
 to see a full list of options
+
+### Project Management
+
+If you run `deploy init` for a single AWS profile, all resources created with the tool will automatically
+be deployed to this "default" account.
+
+If multiple AWS profiles are created via `batch init`, then you will either need to use
+the `--profile <name>` flag when interacting with the API, or to specfiy the profile in your `.deploy` file
+
+The `./deploy` file is created in the root directory of the git repo and follows the following format:
+
+```
+{
+    "profile": "name of AWS Account profile",
+    "tags": [{
+        "Key": "Optional Tags",
+        "Value": "That should be applied to Resources (Useful for billing)"
+    }]
+}
+```
