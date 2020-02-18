@@ -70,6 +70,14 @@ if (command === 'create' && argv.help) {
 
 const repo = path.parse(path.resolve('.')).name;
 
+let override;
+
+try {
+    override = JSON.parse(fs.readFileSync('.deploy'));
+} catch (err) {
+      override = {};
+}
+
 if (command === 'init') {
     prompt.message = '$';
     prompt.start();
@@ -146,6 +154,9 @@ if (command === 'init') {
 
         friend.build(cf_path).then(template => {
             cf_path = `/tmp/${cf_base}.json`;
+
+            template = tagger(template, override.tags);
+
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
             if (command === 'create') {
@@ -276,19 +287,44 @@ function checkImage(creds, template, cb) {
     }
 }
 
+/**
+ * Add additional global tags
+ */
+function tagger(template, tags) {
+    if (!template.Resources) return template;
+    if (!tags || !tags.length) return template;
+
+    for (const name of Object.keys(template.Resources)) {
+        if (!template.Resources[name].Properties) continue;
+
+        if (!template.Resources[name].Properties.Tags) {
+            template.Resources[name].Properties.Tags = [];
+        }
+
+        const tag_names = template.Resources[name].Properties.Tags.map((t) => t.Key);
+
+        for (const oTag of tags) {
+            if (tag_names.includes(oTag)) {
+                for (const tag of template.Resources[name].Properties.Tags) {
+                    if (tag.Key === oTag.Key) {
+                        tag.Value = oTag.Value;
+                        break;
+                    }
+                }
+            } else {
+                template.Resources[name].Properties.Tags.push(oTag);
+            }
+        }
+    }
+
+    return template;
+}
+
 function loadCreds(argv, cb) {
     fs.readFile(path.resolve(process.env.HOME, '.deployrc.json'), (err, creds) => {
         if (err) return cb(new Error('No creds found - run "deploy init"'));
 
         creds = JSON.parse(creds);
-        let override;
-
-        try {
-            override = JSON.parse(fs.readFileSync('.deploy'));
-        } catch (err) {
-              override = {};
-        }
-
         if (argv.profile) {
             if (!creds[argv.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
             creds = creds[argv.profile];
