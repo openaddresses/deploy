@@ -252,7 +252,7 @@ if (command === 'init') {
 
 function checkImage(creds, template, cb) {
     let retries = 0;
-    const maxRetries = 5;
+    const maxRetries = 60;
 
     if (!template.Parameters.GitSha) return cb();
 
@@ -280,7 +280,7 @@ function checkImage(creds, template, cb) {
             } else if (retries < maxRetries) {
                 if (retries === 0) console.log(`Waiting for Docker Image: AWS::ECR: ${repo}/${sha}`);
                 retries += 1;
-                setTimeout(check, 2000);
+                setTimeout(check, 5000);
             } else {
                 return cb(new Error('No image found for commit ' + sha ));
             }
