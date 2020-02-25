@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 const fs = require('fs');
+const { checkImage } = require('./lib/docker');
 const schema = require('./data/cf_schema.json');
 const cf = require('@mapbox/cfn-config');
 const AWS = require('aws-sdk');
@@ -71,12 +72,24 @@ if (command === 'create' && argv.help) {
 
 const repo = path.parse(path.resolve('.')).name;
 
-let override;
+const git = cp.spawnSync('git', [
+    '--git-dir', path.resolve('.', '.git'),
+    'rev-parse', 'HEAD'
+]);
+
+if (!git.stdout) throw new Error('Is this a git repo? Could not determine GitSha');
+const sha = String(git.stdout).replace(/\n/g, '');
+
+let dotdeploy;
 
 try {
-    override = JSON.parse(fs.readFileSync('.deploy'));
+    dotdeploy = JSON.parse(fs.readFileSync('.deploy'));
 } catch (err) {
-      override = {};
+    if (err.name === 'SyntaxError') {
+        throw new Error('Invalid JSON in .deploy file');
+    }
+
+    dotdeploy = {};
 }
 
 if (command === 'init') {
@@ -156,12 +169,12 @@ if (command === 'init') {
         friend.build(cf_path).then(template => {
             cf_path = `/tmp/${cf_base}.json`;
 
-            template = tagger(template, override.tags);
+            template = tagger(template, dotdeploy.tags);
 
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
             if (command === 'create') {
-                checkImage(creds, template, (err, sha) => {
+                checkImage(creds, (err) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.create(stack, cf_path, {
@@ -174,7 +187,7 @@ if (command === 'init') {
                     });
                 });
             } else if (command === 'update') {
-                checkImage(creds, template, (err, sha) => {
+                checkImage(creds, (err) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.update(stack, cf_path, {
@@ -250,44 +263,6 @@ if (command === 'init') {
     });
 }
 
-function checkImage(creds, template, cb) {
-    let retries = 0;
-    const maxRetries = 60;
-
-    if (!template.Parameters.GitSha) return cb();
-
-    const git = cp.spawnSync('git', [
-        '--git-dir', path.resolve('.', '.git'),
-        'rev-parse', 'HEAD'
-    ]);
-
-    if (!git.stdout) return cb(new Error('Is this a git repo? Could not determine GitSha'));
-    const sha = String(git.stdout).replace(/\n/g, '');
-
-    check();
-
-    function check() {
-        const ecr = new AWS.ECR({ region: creds.region });
-
-        ecr.batchGetImage({
-            imageIds: [{ imageTag: sha  }],
-            repositoryName: repo
-        }, (err, data) => {
-            if (err) return cb(err);
-
-            if (data && data.images.length) {
-                return cb(null, sha);
-            } else if (retries < maxRetries) {
-                if (retries === 0) console.log(`Waiting for Docker Image: AWS::ECR: ${repo}/${sha}`);
-                retries += 1;
-                setTimeout(check, 5000);
-            } else {
-                return cb(new Error('No image found for commit ' + sha ));
-            }
-        });
-    }
-}
-
 /**
  * Add additional global tags
  */
@@ -335,12 +310,13 @@ function loadCreds(argv, cb) {
         if (err) return cb(new Error('No creds found - run "deploy init"'));
 
         creds = JSON.parse(creds);
+
         if (argv.profile) {
             if (!creds[argv.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
             creds = creds[argv.profile];
-        } else if (override.profile) {
-            if (!creds[override.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
-            creds = creds[override.profile];
+        } else if (dotdeploy.profile) {
+            if (!creds[dotdeploy.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
+            creds = creds[dotdeploy.profile];
         } else if (Object.keys(creds).length > 1) {
             return cb(new Error('Multiple deploy profiles found. Deploy with --profile or set a .deploy file'));
         } else {
@@ -354,6 +330,10 @@ function loadCreds(argv, cb) {
         }
 
         cf.preauth(creds);
+
+        creds.repo = repo;
+        creds.sha = sha;
+        creds.dotdeploy = dotdeploy;
 
         return cb(null, creds);
     });
