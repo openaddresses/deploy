@@ -77,7 +77,7 @@ const git = cp.spawnSync('git', [
     'rev-parse', 'HEAD'
 ]);
 
-if (!git.stdout) return cb(new Error('Is this a git repo? Could not determine GitSha'));
+if (!git.stdout) throw new Error('Is this a git repo? Could not determine GitSha');
 const sha = String(git.stdout).replace(/\n/g, '');
 
 let dotdeploy;
@@ -85,7 +85,11 @@ let dotdeploy;
 try {
     dotdeploy = JSON.parse(fs.readFileSync('.deploy'));
 } catch (err) {
-      dotdeploy = {};
+    if (err.name === 'SyntaxError') {
+        throw new Error('Invalid JSON in .deploy file');
+    }
+
+    dotdeploy = {};
 }
 
 if (command === 'init') {
