@@ -72,12 +72,21 @@ if (command === 'create' && argv.help) {
 
 const repo = path.parse(path.resolve('.')).name;
 
-let override;
+const git = cp.spawnSync('git', [
+    '--git-dir', path.resolve('.', '.git'),
+    'rev-parse', 'HEAD'
+]);
+
+if (!git.stdout) return cb(new Error('Is this a git repo? Could not determine GitSha'));
+const sha = String(git.stdout).replace(/\n/g, '');
+
+
+let dotdeploy;
 
 try {
-    override = JSON.parse(fs.readFileSync('.deploy'));
+    dotdeploy = JSON.parse(fs.readFileSync('.deploy'));
 } catch (err) {
-      override = {};
+      dotdeploy = {};
 }
 
 if (command === 'init') {
@@ -157,12 +166,12 @@ if (command === 'init') {
         friend.build(cf_path).then(template => {
             cf_path = `/tmp/${cf_base}.json`;
 
-            template = tagger(template, override.tags);
+            template = tagger(template, dotdeploy.tags);
 
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
             if (command === 'create') {
-                checkImage(creds, template, (err, sha) => {
+                checkImage(creds, (err, sha) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.create(stack, cf_path, {
@@ -175,7 +184,7 @@ if (command === 'init') {
                     });
                 });
             } else if (command === 'update') {
-                checkImage(creds, template, (err, sha) => {
+                checkImage(creds, (err, sha) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.update(stack, cf_path, {
@@ -298,12 +307,13 @@ function loadCreds(argv, cb) {
         if (err) return cb(new Error('No creds found - run "deploy init"'));
 
         creds = JSON.parse(creds);
+
         if (argv.profile) {
             if (!creds[argv.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
             creds = creds[argv.profile];
-        } else if (override.profile) {
-            if (!creds[override.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
-            creds = creds[override.profile];
+        } else if (dotdeploy.profile) {
+            if (!creds[dotdeploy.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
+            creds = creds[dotdeploy.profile];
         } else if (Object.keys(creds).length > 1) {
             return cb(new Error('Multiple deploy profiles found. Deploy with --profile or set a .deploy file'));
         } else {
@@ -317,6 +327,10 @@ function loadCreds(argv, cb) {
         }
 
         cf.preauth(creds);
+
+        creds.repo = repo;
+        creds.sha = sha;
+        creds.dotdeploy = dotdeploy;
 
         return cb(null, creds);
     });
