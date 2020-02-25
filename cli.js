@@ -80,7 +80,6 @@ const git = cp.spawnSync('git', [
 if (!git.stdout) return cb(new Error('Is this a git repo? Could not determine GitSha'));
 const sha = String(git.stdout).replace(/\n/g, '');
 
-
 let dotdeploy;
 
 try {
@@ -171,7 +170,7 @@ if (command === 'init') {
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
             if (command === 'create') {
-                checkImage(creds, (err, sha) => {
+                checkImage(creds, (err) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.create(stack, cf_path, {
@@ -184,7 +183,7 @@ if (command === 'init') {
                     });
                 });
             } else if (command === 'update') {
-                checkImage(creds, (err, sha) => {
+                checkImage(creds, (err) => {
                     if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
 
                     cf_cmd.update(stack, cf_path, {
