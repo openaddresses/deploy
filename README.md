@@ -26,7 +26,7 @@ Before you can make changes to any of the underlying infrastructure you must fir
 To do so run:
 
 ```
- init
+deploy init
 ```
 
 and follow the prompts for your credentials.
