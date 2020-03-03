@@ -11,7 +11,7 @@
   "dependencies": {
     "@mapbox/cfn-config": "^2.22.0",
     "@mapbox/cloudfriend": "^4.0.0",
-    "aws-sdk": "^2.618.0",
+    "aws-sdk": "^2.631.0",
     "d3-queue": "^3.0.7",
     "handlebars": "^4.7.3",
     "minimist": "^1.2.0",
