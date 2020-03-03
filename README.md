@@ -59,7 +59,7 @@ The `./deploy` file is created in the root directory of the git repo and follows
 }
 ```
 
-### Watching for Artifacts
+### Watching for Docker Artifacts
 
 By default, if a `Dockerfile` is found in the project root, the ECR will be queried before deploy to ensure
 the image has been built. IE: a git repo named `my-project` would look for an image called `my-project:<Git Sha>`.
@@ -102,6 +102,44 @@ via the `.deploy` file.
         "docker": [
             "{{project}}:backend-{{gitsha}}",
             "{{project}}:frontend-{{gitsha}}"
+        ]
+    }
+}
+```
+
+### Watching for Docker Artifacts
+
+Lambda uploads are not watched for by default. Set artifact listeners via your `.deploy` file
+using the examples below to ensure that they are present on s3 before deploy.
+
+**Disable Lambda Check** (Default)
+
+```JSON
+{
+    "artifacts": {
+        "lambda": false
+    }
+}
+```
+
+**Single Lambda**
+
+```JSON
+{
+    "artifacts": {
+        "lambda": "s3://<bucket>/{{gitsha}}.zip"
+    }
+}
+```
+
+**Multiple Lambdas**
+
+```JSON
+{
+    "artifacts": {
+        "lambda": [
+            "s3://<bucket>/deploy-lambda/{{gitsha}}.zip",
+            "s3://<bucket:>/{{project}}-{{gitsha}}.zip"
         ]
     }
 }

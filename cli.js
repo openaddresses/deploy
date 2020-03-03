@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const fs = require('fs');
-const { checkImage } = require('./lib/docker');
+const artifacts = require('./lib/artifacts');
 const schema = require('./data/cf_schema.json');
 const cf = require('@mapbox/cfn-config');
 const AWS = require('aws-sdk');
@@ -174,8 +174,8 @@ if (command === 'init') {
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
             if (command === 'create') {
-                checkImage(creds, (err) => {
-                    if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
+                artifacts(creds, (err) => {
+                    if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
                     cf_cmd.create(stack, cf_path, {
                         parameters: {
@@ -187,8 +187,8 @@ if (command === 'init') {
                     });
                 });
             } else if (command === 'update') {
-                checkImage(creds, (err) => {
-                    if (err) return console.error(`Docker Image Check Failed: ${err.message}`);
+                artifacts(creds, (err) => {
+                    if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
                     cf_cmd.update(stack, cf_path, {
                         parameters: {
