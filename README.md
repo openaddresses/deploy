@@ -127,7 +127,7 @@ using the examples below to ensure that they are present on s3 before deploy.
 ```JSON
 {
     "artifacts": {
-        "lambda": "s3://<bucket>/{{gitsha}}.zip"
+        "lambda": "<bucket>/{{gitsha}}.zip"
     }
 }
 ```
@@ -138,8 +138,8 @@ using the examples below to ensure that they are present on s3 before deploy.
 {
     "artifacts": {
         "lambda": [
-            "s3://<bucket>/deploy-lambda/{{gitsha}}.zip",
-            "s3://<bucket:>/{{project}}-{{gitsha}}.zip"
+            "<bucket>/deploy-lambda/{{gitsha}}.zip",
+            "<bucket:>/{{project}}-{{gitsha}}.zip"
         ]
     }
 }
