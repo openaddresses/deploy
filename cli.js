@@ -276,7 +276,7 @@ function tagger(template, tags) {
             || !schema.ResourceTypes[template.Resources[name].Type]
             || !schema.ResourceTypes[template.Resources[name].Type].Properties
             || !schema.ResourceTypes[template.Resources[name].Type].Properties.Tags
-        ) return template;
+        ) continue;
 
         if (!template.Resources[name].Properties) {
             template.Resources[name].Properties = {};
