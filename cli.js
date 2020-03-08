@@ -9,11 +9,17 @@ const friend = require('@mapbox/cloudfriend');
 const path = require('path');
 const prompt = require('prompt');
 const cp = require('child_process');
+
+// Modes
+const mode = {
+    info: require('./lib/info')
+}
+
 const argv = require('minimist')(process.argv, {
     boolean: ['help']
 });
 
-if (!argv._[2] || argv.help) {
+if (!argv._[2] || argv._[2] === 'help' || argv.help) {
     console.log();
     console.log('usage: deploy <command> [--profile] [--version] [--help]');
     console.log()
@@ -32,7 +38,7 @@ if (!argv._[2] || argv.help) {
     console.log('    --version, -v           Displays version information');
     console.log('    --help                  Prints this help message');
     console.log();
-    process.exit();
+    return;
 }
 
 const command = argv._[2];
@@ -46,35 +52,36 @@ if (command === 'create' && argv.help) {
     console.log('  cloudformation/<reponame>.template.json');
     console.log('  cloudformation/<reponame>.template.js');
     console.log();
-    process.exit();
+    return;
 } else if (command === 'update' && argv.help) {
     console.log();
     console.log('usage deploy update <STACK>');
     console.log()
-    process.exit();
+    return;
 } else if (command === 'delete' && argv.help) {
     console.log();
     console.log('usage deploy delete <STACK>');
     console.log()
-    process.exit();
+    return;
 } else if (command === 'list' && argv.help) {
     console.log();
     console.log('usage deploy list');
     console.log();
     console.error('List all of the currently running stacks deployed from the current repo');
     console.log()
-} else if (command === 'info' && argv.help) {
-    console.log();
-    console.log('usage deploy info');
-    console.log();
-    console.error('Get info about a specific stack in the current repo');
-    console.log()
+    return;
 } else if (command === 'env' && argv.help) {
     console.log();
     console.log('usage deploy env');
     console.log();
     console.error('Export AWS_ environment variables into current shell');
     console.log()
+    return;
+} else if (mode[command] && argv.help) {
+    mode[command].help();
+} else if (argv.help) {
+    console.error('Subcommand not found!');
+    process.exit(1);
 }
 
 const repo = path.parse(path.resolve('.')).name;
@@ -264,23 +271,15 @@ if (command === 'init') {
             }
         });
     });
-} else if (command === 'info') {
+} else if (mode[command]) {
     loadCreds(argv, (err, creds) => {
         if (err) throw err;
 
-        const cloudformation = new AWS.CloudFormation({
-            region: creds.region
-        });
-
-        if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
-        const stack = argv._[3];
-
-        cf.lookup.info(`${repo}-${stack}`, creds.region, true, false, (err, info) => {
-            if (err) throw err;
-
-            console.log(JSON.stringify(info, null, 4));
-        });
+        mode[command].main(creds, process.argv);
     });
+} else {
+    console.error('Subcommand not found!');
+    process.exit(1);
 }
 
 /**
