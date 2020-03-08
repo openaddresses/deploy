@@ -1,9 +1,8 @@
 {
-  "name": "deploy",
-  "version": "1.0.0",
+  "name": "openaddresses-deploy",
+  "version": "1.2.0",
   "main": "index.js",
   "author": "ingalls <ingalls@protonmail.com>",
-  "private": true,
   "license": "MIT",
   "bin": {
     "deploy": "cli.js"
