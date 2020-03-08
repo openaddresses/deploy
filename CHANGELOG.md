@@ -10,6 +10,15 @@
 
 ## Version History
 
+### v1.2.0
+
+- :tada: Add support for `--parameters` table mode
+
+### v1.1.0
+
+- :tada: Add table support for stack Outputs
+- :rocket: Refactor `info` subcommand into mode
+
 ### v1.0.0
 
 - :rocket: Refactor artifacts to be more generic and support lambdas
