@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.2.1
+
+- :bug: Avoid error during simultaneous deploys when the CF file is deleted by whichever deploy is finished first
+
 ### v1.2.0
 
 - :tada: Add support for `--parameters` table mode
