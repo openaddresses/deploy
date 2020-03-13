@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.2.2
+
+- :arrow_up: Update to latest `minimist` version in response to GH Security Advisory
+
 ### v1.2.1
 
 - :bug: Avoid error during simultaneous deploys when the CF file is deleted by whichever deploy is finished first
