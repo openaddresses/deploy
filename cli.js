@@ -194,7 +194,7 @@ if (command === 'init') {
         if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
 
         friend.build(cf_path).then(template => {
-            cf_path = `/tmp/${cf_base}.json`;
+            cf_path = `/tmp/${cf_base}-${hash()}.json`;
 
             template = tagger(template, dotdeploy.tags);
 
@@ -359,4 +359,8 @@ function loadCreds(argv, cb) {
 
         return cb(null, creds);
     });
+}
+
+function hash() {
+     return Math.random().toString(36).substring(2, 15);
 }
