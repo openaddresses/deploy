@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@mapbox/cfn-config@^2.22.0":
-  version "2.22.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/cfn-config/-/cfn-config-2.22.0.tgz#18a20c3620c36680614576b1ab2c7e7efa6ea995"
-  integrity sha512-jxg7uSUOGMIAPoYsgH4tCOTzT55ufV3E1UfjsQqbzicoS8+yi4bptTLpeR7aflV3BACKbFOT4pUH38JCybZAVg==
+"@mapbox/cfn-config@^2.22.1":
+  version "2.22.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/cfn-config/-/cfn-config-2.22.1.tgz#665ced12d1119485b0dc88540159906c7014d740"
+  integrity sha512-sEpXs13yhG+90Xc7rEjS9kDaf8axsXdM920FdVbALcLBNEzW4iquDft7HvKKQAUyzeCs3nNL0/SqVkVD9krssg==
   dependencies:
     aws-sdk "^2.288.0"
     cfn-stack-event-stream "^1.0.1"
@@ -21,10 +21,10 @@
     meow "^5.0.0"
     s3urls "^1.5.2"
 
-"@mapbox/cloudfriend@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-4.0.0.tgz#0c2038120d74f0e052159cfe0cfdc8f043213ac9"
-  integrity sha512-HDDIS8J3J+5pOGFD+4uW6e/9o/vDWFhJpNquceze0PFX7JXDgtOmMsVJwtRUvQD5JJtS/Hk2qRfpVAlL3OajRw==
+"@mapbox/cloudfriend@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/cloudfriend/-/cloudfriend-4.1.1.tgz#1e203fd6e9d1b390fd7103c7a5b6c4e658256c75"
+  integrity sha512-7u7MAEQICSvLp+UX7e58qoYI5Qsxp59u6lqs2KEOeqB8bMz2sO/WPHIMbaAUwFdTQr3Pmatep8l9oOZ9JwDbbQ==
   dependencies:
     aws-sdk "^2.4.11"
     minimist "^1.2.0"
@@ -72,25 +72,10 @@ async@~1.0.0:
   resolved "https://registry.yarnpkg.com/async/-/async-1.0.0.tgz#f8fc04ca3a13784ade9e1641af98578cfbd647a9"
   integrity sha1-+PwEyjoTeErenhZBr5hXjPvWR6k=
 
-aws-sdk@^2.0.4, aws-sdk@^2.288.0, aws-sdk@^2.335.0, aws-sdk@^2.4.11:
-  version "2.620.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.620.0.tgz#033240ff7e2b6290c3de68adba5adc371dd103b5"
-  integrity sha512-j+PGKbYwk5OjzbCFbxzRkcJVEvfdn9YFkrU8dJdjleYf9AzUSUpTjMyZsyUPOKxJxdNdA9FYTs43WdtSKHZa0A==
-  dependencies:
-    buffer "4.9.1"
-    events "1.1.1"
-    ieee754 "1.1.13"
-    jmespath "0.15.0"
-    querystring "0.2.0"
-    sax "1.2.1"
-    url "0.10.3"
-    uuid "3.3.2"
-    xml2js "0.4.19"
-
-aws-sdk@^2.631.0:
-  version "2.631.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.631.0.tgz#31f5327ea9afb55f1e60ba594727fc16a04e8cf0"
-  integrity sha512-oGYe21pc8b1rxJFZMETZIhY4e/QBJv8Keq4RCef3D/GNXR+oxDQsEDk9KchbkW0WJDxiglj3LnZzPYUhISnBbw==
+aws-sdk@^2.0.4, aws-sdk@^2.288.0, aws-sdk@^2.335.0, aws-sdk@^2.4.11, aws-sdk@^2.642.0:
+  version "2.642.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.642.0.tgz#a18cd18db852378c7d9386c17b84d3fbdef539bf"
+  integrity sha512-0ZNgL1HBXRVobFD9Z64RyQk50cNABDMU1GV4lYIAvao4urYqYJi2MEVQmq+7WyXyzkBWu3lAPNDiJ8WW7emTzg==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -401,9 +386,9 @@ has-flag@^3.0.0:
   integrity sha1-CH4fELBGky/IWU3Z5tN4r8nR5aw=
 
 hosted-git-info@^2.1.4:
-  version "2.8.5"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.5.tgz#759cfcf2c4d156ade59b0b2dfabddc42a6b9c70c"
-  integrity sha512-kssjab8CvdXfcXMXVcvsXum4Hwdq9XGtRD3TteMEvEbq0LXyiNQr6AprqKqfeaDXze7SxWvRxdpwE6ku7ikLkg==
+  version "2.8.8"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
+  integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
 
 i@0.3.x:
   version "0.3.6"
@@ -596,15 +581,10 @@ minimist-options@^3.0.1:
     arrify "^1.0.1"
     is-plain-obj "^1.1.0"
 
-minimist@0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.0.8.tgz#857fcabfc3397d2625b8228262e86aa7a011b05d"
-  integrity sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=
-
-minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.2.tgz#b00a00230a1108c48c169e69a291aafda3aacd63"
-  integrity sha512-rIqbOrKb8GJmx/5bc2M0QchhUouMXSpd1RTclXsB41JdL+VtnojfaJR+h7F9k18/4kHUsBFgk80Uk+q569vjPA==
+minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
+  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
 minimist@~0.0.1:
   version "0.0.10"
@@ -612,11 +592,11 @@ minimist@~0.0.1:
   integrity sha1-3j+YVD2/lggr5IrRoMfNqDYwHc8=
 
 mkdirp@0.x.x:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
-  integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.3.tgz#5a514b7179259287952881e94410ec5465659f8c"
+  integrity sha512-P+2gwrFqx8lhew375MQHHeTlY8AuOJSrGf0R5ddkEndUkmwpgUob/vQuBD1V22/Cw1/lJr4x+EjllSezBThzBg==
   dependencies:
-    minimist "0.0.8"
+    minimist "^1.2.5"
 
 mute-stream@0.0.7:
   version "0.0.7"
@@ -826,9 +806,9 @@ rimraf@2.x.x:
     glob "^7.1.3"
 
 run-async@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/run-async/-/run-async-2.3.0.tgz#0371ab4ae0bdd720d4166d7dfda64ff7a445a6c0"
-  integrity sha1-A3GrSuC91yDUFm19/aZP96RFpsA=
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/run-async/-/run-async-2.4.0.tgz#e59054a5b86876cfae07f431d18cbaddc594f1e8"
+  integrity sha512-xJTbh/d7Lm7SBhc1tNvTpeCHaEzoyxPrqNlvSdMfBTYwaY++UJFyXUOxAtsRUXjlqOfj8luNaR9vjCh4KeV+pg==
   dependencies:
     is-promise "^2.1.0"
 
@@ -972,9 +952,9 @@ trim-newlines@^2.0.0:
   integrity sha1-tAPQuRvlDDMd/EuC7s6yLD3hbSA=
 
 tslib@^1.9.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
-  integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"
+  integrity sha512-aZW88SY8kQbU7gpV19lN24LtXh/yD4ZZg6qieAJDDg+YBsJcSmLGK9QpnUjAKVG/xefmvJGd1WUmfpT/g6AJGA==
 
 uglify-js@^3.1.4:
   version "3.8.0"
