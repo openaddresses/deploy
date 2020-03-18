@@ -10,6 +10,12 @@
 
 ## Version History
 
+### v1.2.4
+
+- :bug: Fix `--version` flag
+- :bug: Add missing help mode for `deploy info --help`
+- :pencil2: Fix and expand in code help documentation
+ 
 ### v1.2.3
 
 - :arrow_up: Update core deps to latest versions
