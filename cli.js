@@ -16,16 +16,25 @@ const mode = {
 }
 
 const argv = require('minimist')(process.argv, {
-    boolean: ['help']
+    boolean: ['help', 'version'],
+    string: ['profile'],
+    alias: {
+        version: 'v'
+    }
 });
 
-if (!argv._[2] || argv._[2] === 'help' || argv.help) {
+if (argv.version) {
+    console.log('openaddresses-deploy@' + require('./package.json').version);
+    return;
+}
+
+if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log();
-    console.log('usage: deploy <command> [--profile] [--version] [--help]');
+    console.log('Usage: deploy <command> [--profile] [--version] [--help]');
     console.log()
     console.log('Create, manage and delete Cloudformation Resouces from the CLI');
     console.log();
-    console.log('<command>:');
+    console.log('Subcommands:');
     console.log('    init      [--help]         Setup Credentials for a new AWS Account');
     console.log('    list      [--help]         List all stack assoc. with the current repo');
     console.log('    info      [--help]         Get information on a specific stack within the current repo');
@@ -45,7 +54,7 @@ const command = argv._[2];
 
 if (command === 'create' && argv.help) {
     console.log();
-    console.log('usage deploy create <STACK>');
+    console.log('Usage: deploy create <STACK>');
     console.log();
     console.log('Create new AWS resource from a CF Template');
     console.log('template should be in the following location:');
@@ -55,27 +64,38 @@ if (command === 'create' && argv.help) {
     return;
 } else if (command === 'update' && argv.help) {
     console.log();
-    console.log('usage deploy update <STACK>');
+    console.log('Usage: deploy update <STACK>');
     console.log()
     return;
 } else if (command === 'delete' && argv.help) {
     console.log();
-    console.log('usage deploy delete <STACK>');
+    console.log('Usage: deploy delete <STACK>');
     console.log()
     return;
 } else if (command === 'list' && argv.help) {
     console.log();
-    console.log('usage deploy list');
+    console.log('Usage: deploy list');
     console.log();
-    console.error('List all of the currently running stacks deployed from the current repo');
+    console.log('List all of the currently running stacks deployed from the current repo');
     console.log()
     return;
 } else if (command === 'env' && argv.help) {
     console.log();
-    console.log('usage deploy env');
+    console.log('Usage: deploy env');
     console.log();
-    console.error('Export AWS_ environment variables into current shell');
+    console.log('Export AWS_ environment variables into current shell');
     console.log()
+    return;
+} else if (command === 'info' && argv.help) {
+    console.log();
+    console.log('Usage: deploy info <STACK> [--outputs] [--parameters]');
+    console.log();
+    console.log('Display JSON information about a given stack');
+    console.log();
+    console.log('Options:');
+    console.log('   --outputs           Display a table of all outputs & values');
+    console.log('   --parameters        Display a table of all parameters and values');
+    console.log();
     return;
 } else if (mode[command] && argv.help) {
     mode[command].help();
