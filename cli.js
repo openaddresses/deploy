@@ -17,7 +17,7 @@ const mode = {
 
 const argv = require('minimist')(process.argv, {
     boolean: ['help', 'version'],
-    string: ['profile'],
+    string: ['profile', 'template'],
     alias: {
         version: 'v'
     }
@@ -30,7 +30,8 @@ if (argv.version) {
 
 if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log();
-    console.log('Usage: deploy <command> [--profile] [--version] [--help]');
+    console.log('Usage: deploy <command> [--profile <name>] [--template <path>]');
+    console.log('              [--version] [--help]');
     console.log()
     console.log('Create, manage and delete Cloudformation Resouces from the CLI');
     console.log();
@@ -44,6 +45,12 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('    env       [--help]         Setup AWS env vars in current shell');
     console.log();
     console.log('[options]:');
+    console.log('    --profile <name>        If there are multiple AWS profiles set up, the profile to deploy');
+    console.log('                              with must be defined either via a .deploy file or via this flag');
+    console.log('    --template <path>       The master template should be found at "cloudformation/<repo-name>.template.js(on)"')
+    console.log('                              if the project has multiple CF Templates, they can be deployed by specifying');
+    console.log('                              their location with this flag. The stack will be named:');
+    console.log('                              <repo>-<stack name>-<template name>');
     console.log('    --version, -v           Displays version information');
     console.log('    --help                  Prints this help message');
     console.log();
