@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.2.3
+
+- :arrow_up: Update core deps to latest versions
+
 ### v1.2.2
 
 - :arrow_up: Update to latest `minimist` version in response to GH Security Advisory
