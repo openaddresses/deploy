@@ -82,17 +82,6 @@ if (command === 'create' && argv.help) {
     console.log('Usage: deploy delete <STACK>');
     console.log()
     return;
-} else if (command === 'info' && argv.help) {
-    console.log();
-    console.log('Usage: deploy info <STACK> [--outputs] [--parameters]');
-    console.log();
-    console.log('Display JSON information about a given stack');
-    console.log();
-    console.log('Options:');
-    console.log('   --outputs           Display a table of all outputs & values');
-    console.log('   --parameters        Display a table of all parameters and values');
-    console.log();
-    return;
 } else if (mode[command] && argv.help) {
     mode[command].help();
     return;
