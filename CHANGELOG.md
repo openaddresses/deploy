@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.3.1
+
+- :bug: Some modes shouldn't attempt to load a template
+
 ### v1.3.0
 
 - :tada: Add support for the `--template` flag
