@@ -13,6 +13,7 @@ const cp = require('child_process');
 // Modes
 const mode = {
     env: require('./lib/env'),
+    list: require('./lib/list'),
     init: require('./lib/init'),
     info: require('./lib/info')
 }
@@ -79,13 +80,6 @@ if (command === 'create' && argv.help) {
 } else if (command === 'delete' && argv.help) {
     console.log();
     console.log('Usage: deploy delete <STACK>');
-    console.log()
-    return;
-} else if (command === 'list' && argv.help) {
-    console.log();
-    console.log('Usage: deploy list');
-    console.log();
-    console.log('List all of the currently running stacks deployed from the current repo');
     console.log()
     return;
 } else if (command === 'info' && argv.help) {
@@ -198,43 +192,6 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
             }
         });
     })
-} else if (command === 'list') {
-    loadCreds(argv, (err, creds) => {
-        if (err) throw err;
-
-        const cloudformation = new AWS.CloudFormation({
-            region: creds.region
-        });
-
-        cloudformation.listStacks({
-            // All but "DELETE_COMPLETE"
-            StackStatusFilter: [
-              'CREATE_IN_PROGRESS',
-              'CREATE_FAILED',
-              'CREATE_COMPLETE',
-              'ROLLBACK_IN_PROGRESS',
-              'ROLLBACK_FAILED',
-              'ROLLBACK_COMPLETE',
-              'DELETE_IN_PROGRESS',
-              'DELETE_FAILED',
-              'UPDATE_IN_PROGRESS',
-              'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
-              'UPDATE_COMPLETE',
-              'UPDATE_ROLLBACK_IN_PROGRESS',
-              'UPDATE_ROLLBACK_FAILED',
-              'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
-              'UPDATE_ROLLBACK_COMPLETE'
-            ]
-        }, (err, res) => {
-            if (err) throw err;
-
-            for (let stack of res.StackSummaries) {
-                if (stack.StackName.match(new RegExp(`^${repo}-`))) {
-                    console.error(stack.StackName, stack.StackStatus, stack.CreationTime);
-                }
-            }
-        });
-    });
 } else if (mode[command]) {
     if (['init'].includes(command)) {
         mode[command].main(process.argv);
