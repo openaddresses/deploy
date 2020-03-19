@@ -12,6 +12,7 @@ const cp = require('child_process');
 
 // Modes
 const mode = {
+    env: require('./lib/env'),
     init: require('./lib/init'),
     info: require('./lib/info')
 }
@@ -87,13 +88,6 @@ if (command === 'create' && argv.help) {
     console.log('List all of the currently running stacks deployed from the current repo');
     console.log()
     return;
-} else if (command === 'env' && argv.help) {
-    console.log();
-    console.log('Usage: deploy env');
-    console.log();
-    console.log('Export AWS_ environment variables into current shell');
-    console.log()
-    return;
 } else if (command === 'info' && argv.help) {
     console.log();
     console.log('Usage: deploy info <STACK> [--outputs] [--parameters]');
@@ -135,17 +129,7 @@ try {
     dotdeploy = {};
 }
 
-if (command === 'env') {
-    loadCreds(argv, (err, creds) => {
-        if (err) throw err;
-
-        console.log(`export AWS_DEFAULT_REGION=${creds.region}`);
-        console.log(`export AWS_ACCESS_KEY_ID=${creds.accessKeyId}`);
-        console.log(`export AWS_SECRET_ACCESS_KEY=${creds.secretAccessKey}`);
-
-        console.error(`ok - [${creds.profile}] environment configured`);
-    });
-} else if (['create', 'update', 'delete'].indexOf(command) > -1) {
+if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
