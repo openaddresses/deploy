@@ -10,6 +10,8 @@ const path = require('path');
 const prompt = require('prompt');
 const cp = require('child_process');
 
+const Credentials = require('./lib/creds');
+
 // Modes
 const mode = {
     env: require('./lib/env'),
@@ -90,60 +92,26 @@ if (command === 'create' && argv.help) {
     process.exit(1);
 }
 
-const repo = path.parse(path.resolve('.')).name;
-
-const git = cp.spawnSync('git', [
-    '--git-dir', path.resolve('.', '.git'),
-    'rev-parse', 'HEAD'
-]);
-
-if (!git.stdout) throw new Error('Is this a git repo? Could not determine GitSha');
-const sha = String(git.stdout).replace(/\n/g, '');
-
-let dotdeploy;
-
-try {
-    dotdeploy = JSON.parse(fs.readFileSync('.deploy'));
-} catch (err) {
-    if (err.name === 'SyntaxError') {
-        throw new Error('Invalid JSON in .deploy file');
-    }
-
-    dotdeploy = {};
-}
-
 if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
-    loadCreds(argv, (err, creds) => {
+    Credentials.load(argv, (err, creds) => {
         if (err) throw err;
 
+        cf.preauth(creds);
+
         const cf_cmd = cf.commands({
-            name: repo,
+            name: creds.repo,
             region: creds.region,
             configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
             templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
         });
 
-        let cf_base = `${repo}.template`
-        let cf_path = false;
-        for (let file of fs.readdirSync(path.resolve('./cloudformation/'))) {
-            if (file.indexOf(cf_base) === -1) continue;
+        friend.build(creds.template).then(template => {
+            cf_path = `/tmp/${hash()}.json`;
 
-            const ext = path.parse(file).ext;
-            if (ext === '.js' || ext === '.json') {
-                cf_path = path.resolve('./cloudformation/', file);
-                break;
-            }
-        }
-
-        if (!cf_path) return console.error(`Could not find CF Template in cloudformation/${repo}.template.js(on)`);
-
-        friend.build(cf_path).then(template => {
-            cf_path = `/tmp/${cf_base}-${hash()}.json`;
-
-            template = tagger(template, dotdeploy.tags);
+            template = tagger(template, creds.dotdeploy.tags);
 
             fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
@@ -151,9 +119,9 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 artifacts(creds, (err) => {
                     if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                    cf_cmd.create(stack, cf_path, {
+                    cf_cmd.create(stack + creds.name, cf_path, {
                         parameters: {
-                            GitSha: sha
+                            GitSha: creds.sha
                         }
                     }, (err) => {
                         if (err) return console.error(`Create failed: ${err.message}`);
@@ -164,9 +132,9 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 artifacts(creds, (err) => {
                     if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                    cf_cmd.update(stack, cf_path, {
+                    cf_cmd.update(stack + creds.name, cf_path, {
                         parameters: {
-                            GitSha: sha
+                            GitSha: creds.sha
                         }
                     }, (err) => {
                         if (err) return console.error(`Update failed: ${err.message}`);
@@ -174,7 +142,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                     });
                 });
             } else if (command === 'delete') {
-                cf_cmd.delete(stack, (err) => {
+                cf_cmd.delete(stack + creds.name, (err) => {
                     if (err) return console.error(`Delete failed: ${err.message}`);
                     fs.unlinkSync(cf_path);
                 });
@@ -185,7 +153,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (['init'].includes(command)) {
         mode[command].main(process.argv);
     } else {
-        loadCreds(argv, (err, creds) => {
+        Credentials.load(argv, (err, creds) => {
             if (err) throw err;
 
             mode[command].main(creds, process.argv);
@@ -236,43 +204,6 @@ function tagger(template, tags) {
     }
 
     return template;
-}
-
-function loadCreds(argv, cb) {
-    fs.readFile(path.resolve(process.env.HOME, '.deployrc.json'), (err, creds) => {
-        if (err) return cb(new Error('No creds found - run "deploy init"'));
-
-        creds = JSON.parse(creds);
-
-        if (argv.profile) {
-            if (!creds[argv.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
-            creds = creds[argv.profile];
-            creds.profile = argv.profile;
-        } else if (dotdeploy.profile) {
-            if (!creds[dotdeploy.profile]) return cb(new Error(`${argv.profile} profile not found in creds`));
-            creds = creds[dotdeploy.profile];
-            creds.profile = dotdeploy.profile;
-        } else if (Object.keys(creds).length > 1) {
-            return cb(new Error('Multiple deploy profiles found. Deploy with --profile or set a .deploy file'));
-        } else {
-            creds = Object.keys(creds)[0];
-            creds.profile = 'default';
-        }
-
-        try {
-            AWS.config.credentials = new AWS.Credentials(creds);
-        } catch (err) {
-            return cb(new Error('creds not set: run deploy init'));
-        }
-
-        cf.preauth(creds);
-
-        creds.repo = repo;
-        creds.sha = sha;
-        creds.dotdeploy = dotdeploy;
-
-        return cb(null, creds);
-    });
 }
 
 function hash() {
