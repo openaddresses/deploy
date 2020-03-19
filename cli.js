@@ -119,7 +119,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 artifacts(creds, (err) => {
                     if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                    cf_cmd.create(stack + creds.name, cf_path, {
+                    cf_cmd.create(creds.subname + stack, cf_path, {
                         parameters: {
                             GitSha: creds.sha
                         }
@@ -132,7 +132,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 artifacts(creds, (err) => {
                     if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                    cf_cmd.update(stack + creds.name, cf_path, {
+                    cf_cmd.update(creds.subname + stack, cf_path, {
                         parameters: {
                             GitSha: creds.sha
                         }
@@ -142,7 +142,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                     });
                 });
             } else if (command === 'delete') {
-                cf_cmd.delete(stack + creds.name, (err) => {
+                cf_cmd.delete(creds.subname + stack, (err) => {
                     if (err) return console.error(`Delete failed: ${err.message}`);
                     fs.unlinkSync(cf_path);
                 });
