@@ -12,6 +12,7 @@ const cp = require('child_process');
 
 // Modes
 const mode = {
+    init: require('./lib/init'),
     info: require('./lib/info')
 }
 
@@ -106,6 +107,7 @@ if (command === 'create' && argv.help) {
     return;
 } else if (mode[command] && argv.help) {
     mode[command].help();
+    return;
 } else if (argv.help) {
     console.error('Subcommand not found!');
     process.exit(1);
@@ -133,56 +135,7 @@ try {
     dotdeploy = {};
 }
 
-if (command === 'init') {
-    prompt.message = '$';
-    prompt.start();
-
-    prompt.get([{
-        name: 'profile',
-        type: 'string',
-        required: true,
-        default: 'default'
-    },{
-        name: 'region',
-        type: 'string',
-        required: true,
-        default: 'us-east-1'
-    },{
-        name: 'accountId',
-        type: 'string',
-        required: true
-    },{
-        name: 'accessKeyId',
-        type: 'string',
-        required: true
-    },{
-        name: 'secretAccessKey',
-        hidden: true,
-        replace: '*',
-        required: true,
-        type: 'string'
-    }], (err, argv) => {
-        if (err) return console.error(`deploy init failed: ${err.message}`);
-
-        fs.readFile(path.resolve(process.env.HOME, '.deployrc.json'), (err, creds) => {
-
-            if (err) {
-                creds = {};
-            } else {
-                creds = JSON.parse(creds);
-            }
-
-            creds[argv.profile] = {
-                region: argv.region,
-                accountId: argv.accountId,
-                accessKeyId: argv.accessKeyId,
-                secretAccessKey: argv.secretAccessKey
-            };
-
-            fs.writeFileSync(path.resolve(process.env.HOME, '.deployrc.json'), JSON.stringify(creds, null, 4));
-        });
-    });
-} else if (command === 'env') {
+if (command === 'env') {
     loadCreds(argv, (err, creds) => {
         if (err) throw err;
 
@@ -299,11 +252,15 @@ if (command === 'init') {
         });
     });
 } else if (mode[command]) {
-    loadCreds(argv, (err, creds) => {
-        if (err) throw err;
+    if (['init'].includes(command)) {
+        mode[command].main(process.argv);
+    } else {
+        loadCreds(argv, (err, creds) => {
+            if (err) throw err;
 
-        mode[command].main(creds, process.argv);
-    });
+            mode[command].main(creds, process.argv);
+        });
+    }
 } else {
     console.error('Subcommand not found!');
     process.exit(1);
