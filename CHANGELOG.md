@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v1.3.0
+
+- :tada: Add support for the `--template` flag
+- :rocket: Move a bunch of modules to individual classes
+
 ### v1.2.4
 
 - :bug: Fix `--version` flag
