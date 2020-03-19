@@ -96,7 +96,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
     const stack = argv._[3];
 
-    Credentials.load(argv, (err, creds) => {
+    Credentials.load(argv, {}, (err, creds) => {
         if (err) throw err;
 
         cf.preauth(creds);
@@ -153,7 +153,9 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     if (['init'].includes(command)) {
         mode[command].main(process.argv);
     } else {
-        Credentials.load(argv, (err, creds) => {
+        Credentials.load(argv, {
+            template: false
+        }, (err, creds) => {
             if (err) throw err;
 
             mode[command].main(creds, process.argv);
