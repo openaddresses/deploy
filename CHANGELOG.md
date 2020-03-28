@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.3.2
+
+- :arrow_up: Update base deps
+
 ### v1.3.1
 
 - :bug: Some modes shouldn't attempt to load a template
