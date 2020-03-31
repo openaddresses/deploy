@@ -1,6 +1,6 @@
 {
     "name": "openaddresses-deploy",
-    "version": "1.3.2",
+    "version": "1.4.0",
     "main": "index.js",
     "author": "ingalls <ingalls@protonmail.com>",
     "license": "MIT",
@@ -21,8 +21,8 @@
         "prompt": "^1.0.0"
     },
     "devDependencies": {
+        "@mapbox/eslint-config-geocoding": "^2.0.2",
         "eslint": "^6.8.0",
-        "eslint-plugin-node": "^11.1.0",
-        "@mapbox/eslint-config-geocoding": "^2.0.2"
+        "eslint-plugin-node": "^11.1.0"
     }
 }
