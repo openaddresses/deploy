@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v1.4.0
+
+- :rocket: Refactor `lib/creds` for readability & future extensions
+- :tada: Add ESLinting to the project
+
 ### v1.3.2
 
 - :arrow_up: Update base deps
@@ -28,7 +33,7 @@
 - :bug: Fix `--version` flag
 - :bug: Add missing help mode for `deploy info --help`
 - :pencil2: Fix and expand in code help documentation
- 
+
 ### v1.2.3
 
 - :arrow_up: Update core deps to latest versions
