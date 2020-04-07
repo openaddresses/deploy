@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.4.1
+
+- :arrow_up: General dependency update
+
 ### v1.4.0
 
 - :rocket: Refactor `lib/creds` for readability & future extensions
