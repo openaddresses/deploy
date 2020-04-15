@@ -20,7 +20,7 @@ const mode = {
 
 const argv = require('minimist')(process.argv, {
     boolean: ['help', 'version'],
-    string: ['profile', 'template'],
+    string: ['profile', 'template', 'name'],
     alias: {
         version: 'v'
     }
@@ -50,6 +50,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('[options]:');
     console.log('    --profile <name>        If there are multiple AWS profiles set up, the profile to deploy');
     console.log('                              with must be defined either via a .deploy file or via this flag');
+    console.log('    --name <stack>          Override the default naming conventions of substacks');
     console.log('    --template <path>       The master template should be found at "cloudformation/<repo-name>.template.js(on)"');
     console.log('                              if the project has multiple CF Templates, they can be deployed by specifying');
     console.log('                              their location with this flag. The stack will be named:');
@@ -91,8 +92,7 @@ if (command === 'create' && argv.help) {
 }
 
 if (['create', 'update', 'delete'].indexOf(command) > -1) {
-    if (!argv._[3]) return console.error(`Stack name required: run deploy ${command} --help`);
-    const stack = argv._[3];
+    if (!argv._[3] && !argv.name) return console.error(`Stack name required: run deploy ${command} --help`);
 
     const creds = new Credentials(argv, {});
 
@@ -116,7 +116,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
             artifacts(creds, (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                cf_cmd.create(creds.subname + stack, cf_path, {
+                cf_cmd.create(creds.name, cf_path, {
                     parameters: {
                         GitSha: creds.sha
                     }
@@ -129,7 +129,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
             artifacts(creds, (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
 
-                cf_cmd.update(creds.subname + stack, cf_path, {
+                cf_cmd.update(creds.name, cf_path, {
                     parameters: {
                         GitSha: creds.sha
                     }
@@ -139,7 +139,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 });
             });
         } else if (command === 'delete') {
-            cf_cmd.delete(creds.subname + stack, (err) => {
+            cf_cmd.delete(creds.name, (err) => {
                 if (err) return console.error(`Delete failed: ${err.message}`);
                 fs.unlinkSync(cf_path);
             });
@@ -175,6 +175,11 @@ function tagger(template, tags) {
             || !schema.ResourceTypes[template.Resources[name].Type].Properties.Tags
         ) continue;
 
+        const special = [];
+        if (schema.ResourceTypes[template.Resources[name].Type].Properties.Tags.ItemType === 'TagProperty') {
+            special.push(["PropagateAtLaunch", true])
+        }
+
         if (!template.Resources[name].Properties) {
             template.Resources[name].Properties = {};
         }
@@ -197,6 +202,16 @@ function tagger(template, tags) {
                 template.Resources[name].Properties.Tags.push(oTag);
             }
         }
+
+        template.Resources[name].Properties.Tags = template.Resources[name].Properties.Tags.map((tag) => {
+            tag = JSON.parse(JSON.stringify(tag));
+
+            special.forEach((s) => {
+                tag[s[0]] = s[1];
+            });
+
+            return tag;
+        });
     }
 
     return template;
