@@ -39,6 +39,23 @@ deploy
 
 to see a full list of options
 
+#### Required Tags
+
+If an account uses tags for billing, the following can be used in the `~/.deployrc.json` file to ensure that
+tags are attached to all stacks deployed to that profile
+
+```
+{
+    "<profile_name>": {
+        "region": "<region>",
+        "accountId": "<account_id>",
+        "accessKeyId": "<access_key_id>",
+        "secretAccessKey": "<secret_access_key>",
+        "tags": ["Project", "Owner", "Client", "<another tag>"]
+    }
+}
+```
+
 ### Project Management
 
 If you run `deploy init` for a single AWS profile, all resources created with the tool will automatically
@@ -51,11 +68,7 @@ The `./deploy` file is created in the root directory of the git repo and follows
 
 ```JSON
 {
-    "profile": "name of AWS Account profile",
-    "tags": [{
-        "Key": "Optional Tags",
-        "Value": "That should be applied to Resources (Useful for billing)"
-    }]
+    "profile": "name of AWS Account profile"
 }
 ```
 

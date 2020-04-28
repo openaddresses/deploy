@@ -10,6 +10,12 @@
 
 ## Version History
 
+### v1.5.0
+
+- :arrow_up: general dep updates
+- :tada: Add support for propagateatlaunch tagging
+- :tada: Add support for overriding the default naming conventions for sub templates via `--name` argument
+
 ### v1.4.1
 
 - :arrow_up: General dependency update
