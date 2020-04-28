@@ -108,7 +108,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     friend.build(creds.template).then((template) => {
         const cf_path = `/tmp/${hash()}.json`;
 
-        template = tagger(template, creds.dotdeploy.tags);
+        template = tagger(template, creds.tags);
 
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
@@ -166,6 +166,14 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
 function tagger(template, tags) {
     if (!template.Resources) return template;
     if (!tags || !tags.length) return template;
+    if (!template.Parameters) template.Parameters = {};
+
+    for (const tag of tags) {
+        template.Parameters[tag] = {
+            Type: 'String',
+            Description: 'Tag for the stack'
+        };
+    }
 
     for (const name of Object.keys(template.Resources)) {
         if (
@@ -193,13 +201,18 @@ function tagger(template, tags) {
         for (const oTag of tags) {
             if (tag_names.includes(oTag)) {
                 for (const tag of template.Resources[name].Properties.Tags) {
-                    if (tag.Key === oTag.Key) {
-                        tag.Value = oTag.Value;
+                    if (tag.Key === oTag) {
+                        tag.Value = {
+                            "Ref": oTag
+                        };
                         break;
                     }
                 }
             } else {
-                template.Resources[name].Properties.Tags.push(oTag);
+                template.Resources[name].Properties.Tags.push({
+                    Key: oTag,
+                    Value: { "Ref": oTag }
+                });
             }
         }
 
