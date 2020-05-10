@@ -22,7 +22,7 @@
     },
     "devDependencies": {
         "@mapbox/eslint-config-geocoding": "^2.0.2",
-        "eslint": "^6.8.0",
+        "eslint": "^7.0.0",
         "eslint-plugin-node": "^11.1.0"
     }
 }
