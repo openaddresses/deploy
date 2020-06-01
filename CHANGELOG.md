@@ -10,7 +10,11 @@
 
 ## Version History
 
-### v1.5.0
+### v2.0.1
+
+- :arrow_up: General dep updates
+
+### v2.0.0
 
 - :arrow_up: general dep updates
 - :tada: Add support for propagateatlaunch tagging

@@ -185,7 +185,7 @@ function tagger(template, tags) {
 
         const special = [];
         if (schema.ResourceTypes[template.Resources[name].Type].Properties.Tags.ItemType === 'TagProperty') {
-            special.push(["PropagateAtLaunch", true])
+            special.push(['PropagateAtLaunch', true]);
         }
 
         if (!template.Resources[name].Properties) {
@@ -203,7 +203,7 @@ function tagger(template, tags) {
                 for (const tag of template.Resources[name].Properties.Tags) {
                     if (tag.Key === oTag) {
                         tag.Value = {
-                            "Ref": oTag
+                            'Ref': oTag
                         };
                         break;
                     }
@@ -211,7 +211,7 @@ function tagger(template, tags) {
             } else {
                 template.Resources[name].Properties.Tags.push({
                     Key: oTag,
-                    Value: { "Ref": oTag }
+                    Value: { 'Ref': oTag }
                 });
             }
         }
