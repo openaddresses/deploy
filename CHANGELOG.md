@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.0.2
+
+- :arrow_up: Update `aws-sdk`
+
 ### v2.0.1
 
 - :arrow_up: General dep updates
