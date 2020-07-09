@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v2.1.0
+
+- :tada: `.deploy` files can now specify a `name` property to override the repo name
+- :arrow_up: Update all deps
+
 ### v2.0.2
 
 - :arrow_up: Update `aws-sdk`
