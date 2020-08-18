@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.1.1
+
+- :arrow_up: Update to latest cfn-config & cloudfriend
+
 ### v2.1.0
 
 - :tada: `.deploy` files can now specify a `name` property to override the repo name
