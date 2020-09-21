@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.2.0
+
+- :arrow_up: Update to `cfn-config@3.0.1` to fix deploy bug
+
 ### v2.1.1
 
 - :arrow_up: Update to latest cfn-config & cloudfriend
