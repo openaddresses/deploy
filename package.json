@@ -11,8 +11,9 @@
         "deploy": "cli.js"
     },
     "dependencies": {
-        "@mapbox/cfn-config": "^3.0.0",
+        "@mapbox/cfn-config": "mapbox/cfn-config#overrides-must-change",
         "@mapbox/cloudfriend": "^4.2.1",
+        "@octokit/rest": "^18.0.4",
         "aws-sdk": "^2.656.0",
         "cli-table": "^0.3.1",
         "d3-queue": "^3.0.7",
