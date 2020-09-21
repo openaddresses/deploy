@@ -39,9 +39,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@mapbox/cfn-config@mapbox/cfn-config#overrides-must-change":
-  version "3.0.0"
-  resolved "https://codeload.github.com/mapbox/cfn-config/tar.gz/62f53ece2504b5970702c664d5d72001301b1fbd"
+"@mapbox/cfn-config@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/cfn-config/-/cfn-config-3.0.1.tgz#c63164e025df94e99b021dc975f9d517c5c650e7"
+  integrity sha512-e8TAenjUud6zAO0Je8AUKVq1QSc+6edQ3Am38Twhuwlt+ZcW5Exhu4GTU+Xw8APBmSMKEykAOjwm96bIl3PiKQ==
   dependencies:
     aws-sdk "^2.720.0"
     cfn-stack-event-stream "^1.0.1"
