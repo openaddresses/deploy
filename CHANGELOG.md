@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.3.0
+
+- :tada: Add `json` subcommand for outputting JSONified CF templates
+
 ### v2.2.0
 
 - :arrow_up: Update to `cfn-config@3.0.1` to fix deploy bug
