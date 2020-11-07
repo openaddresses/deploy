@@ -15,7 +15,8 @@ const mode = {
     env: require('./lib/env'),
     list: require('./lib/list'),
     init: require('./lib/init'),
-    info: require('./lib/info')
+    info: require('./lib/info'),
+    json: require('./lib/json')
 };
 
 const argv = require('minimist')(process.argv, {
@@ -45,6 +46,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('    create    [--help]         Create a new stack of the current repo');
     console.log('    update    [--help]         Update an existing stack of the current repo');
     console.log('    delete    [--help]         Delete an existing stack of the current repo');
+    console.log('    json      [--help]         Return the JSONified version of the CF template');
     console.log('    env       [--help]         Setup AWS env vars in current shell');
     console.log();
     console.log('[options]:');
@@ -76,6 +78,11 @@ if (command === 'create' && argv.help) {
 } else if (command === 'update' && argv.help) {
     console.log();
     console.log('Usage: deploy update <STACK>');
+    console.log();
+    return;
+} else if (command === 'json' && argv.help) {
+    console.log();
+    console.log('Usage: deploy json');
     console.log();
     return;
 } else if (command === 'delete' && argv.help) {
@@ -148,6 +155,12 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
 } else if (mode[command]) {
     if (['init'].includes(command)) {
         mode[command].main(process.argv);
+    } else if (['json'].includes(command)) {
+        const creds = new Credentials(argv, {
+            template: true
+        });
+
+        mode[command].main(creds, process.argv);
     } else {
         const creds = new Credentials(argv, {
             template: false
