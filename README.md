@@ -11,13 +11,13 @@
 
 If you don't have yarn installed - follow the instructions [here](https://yarnpkg.com/en/)
 
-```
+```sh
 yarn install
 
 yarn link
 ```
 
-This will make the `deploy` command avaliable globally
+This will make the `deploy` command available globally
 
 ### Auth Setup
 
@@ -25,26 +25,29 @@ Before you can make changes to any of the underlying infrastructure you must fir
 
 To do so run:
 
-```
+```sh
 deploy init
 ```
 
-and follow the prompts for your credentials.
+and follow the prompts for your credentials. Note the `profile name` it prompts is simply
+a nickname for your AWS profile. (for OpenAddresses, use `oa`).
 
 Once finished run
 
-```
+```sh
 deploy
 ```
 
 to see a full list of options
+
+Note: The credentials file can be found in the `~/.deployrc.json` file
 
 #### Required Tags
 
 If an account uses tags for billing, the following can be used in the `~/.deployrc.json` file to ensure that
 tags are attached to all stacks deployed to that profile
 
-```
+```JSON
 {
     "<profile_name>": {
         "region": "<region>",
