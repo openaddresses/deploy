@@ -29,7 +29,7 @@ const argv = require('minimist')(process.argv, {
 
 if (argv.version) {
     console.log('openaddresses-deploy@' + require('./package.json').version);
-    return;
+    process.exit(0);
 }
 
 if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
@@ -60,7 +60,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('    --version, -v           Displays version information');
     console.log('    --help                  Prints this help message');
     console.log();
-    return;
+    process.exit(0);
 }
 
 const command = argv._[2];
@@ -74,32 +74,35 @@ if (command === 'create' && argv.help) {
     console.log('  cloudformation/<reponame>.template.json');
     console.log('  cloudformation/<reponame>.template.js');
     console.log();
-    return;
+    process.exit(0);
 } else if (command === 'update' && argv.help) {
     console.log();
     console.log('Usage: deploy update <STACK>');
     console.log();
-    return;
+    process.exit(0);
 } else if (command === 'json' && argv.help) {
     console.log();
     console.log('Usage: deploy json');
     console.log();
-    return;
+    process.exit(0);
 } else if (command === 'delete' && argv.help) {
     console.log();
     console.log('Usage: deploy delete <STACK>');
     console.log();
-    return;
+    process.exit(0);
 } else if (mode[command] && argv.help) {
     mode[command].help();
-    return;
+    process.exit(0);
 } else if (argv.help) {
     console.error('Subcommand not found!');
     process.exit(1);
 }
 
 if (['create', 'update', 'delete'].indexOf(command) > -1) {
-    if (!argv._[3] && !argv.name) return console.error(`Stack name required: run deploy ${command} --help`);
+    if (!argv._[3] && !argv.name) {
+        console.error(`Stack name required: run deploy ${command} --help`);
+        process.exit(1);
+    }
 
     const creds = new Credentials(argv, {});
 

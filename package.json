@@ -5,7 +5,8 @@
     "author": "ingalls <ingalls@protonmail.com>",
     "license": "MIT",
     "scripts": {
-        "lint": "eslint cli.js lib/**.js"
+        "lint": "eslint cli.js lib/**.js",
+        "doc": "documentation serve cli.js"
     },
     "bin": {
         "deploy": "cli.js"
@@ -23,6 +24,7 @@
     },
     "devDependencies": {
         "@mapbox/eslint-config-geocoding": "^2.0.2",
+        "documentation": "^13.1.0",
         "eslint": "^7.0.0",
         "eslint-plugin-node": "^11.1.0"
     }
