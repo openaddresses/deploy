@@ -9,9 +9,15 @@
 
 ## Install
 
-If you don't have yarn installed - follow the instructions [here](https://yarnpkg.com/en/)
+If you don't have yarn installed - follow the instructions [here](https://classic.yarnpkg.com/en/docs/install)
+
+Clone this repository and run the following from the cloned directory:
 
 ```sh
+git clone git@github.com:openaddresses/deploy.git
+
+cd deploy
+
 yarn install
 
 yarn link
