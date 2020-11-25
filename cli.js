@@ -178,6 +178,8 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
 
 /**
  * Add additional global tags
+ *
+ * @returns {Object}
  */
 function tagger(template, tags) {
     if (!template.Resources) return template;
