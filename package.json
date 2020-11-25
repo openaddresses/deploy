@@ -6,7 +6,7 @@
     "license": "MIT",
     "scripts": {
         "lint": "eslint cli.js lib/**.js",
-        "doc": "documentation serve cli.js"
+        "doc": "documentation serve -w cli.js"
     },
     "bin": {
         "deploy": "cli.js"
