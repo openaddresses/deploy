@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v2.4.0
+
+- :rocket: Use aws credentials file if profile is present
+- :tada: Conditionally prompt for credentials in `init` mode only if credentials are not present in AWS file
+
 ### v2.3.0
 
 - :tada: Add `json` subcommand for outputting JSONified CF templates
