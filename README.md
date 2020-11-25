@@ -35,8 +35,11 @@ To do so run:
 deploy init
 ```
 
-and follow the prompts for your credentials. Note the `profile name` it prompts is simply
-a nickname for your AWS profile. (for OpenAddresses, use `oa`).
+and follow the prompts for your credentials.
+
+Note the `profile name` prompted for should idealy match the profile name as set in your AWS credentials
+file located at `~/.aws/credentials` If the profile name is found in your AWS credentials file, the
+credentials from the file will be linked. If it does not exist, you will be prompted for a set of credentials
 
 Once finished run
 
