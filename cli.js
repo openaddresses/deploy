@@ -105,6 +105,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     }
 
     const creds = new Credentials(argv, {});
+    const gh = new (require('./lib/gh'))(creds);
 
     cf.preauth(creds);
 
@@ -123,28 +124,49 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
         if (command === 'create') {
-            artifacts(creds, (err) => {
+            artifacts(creds, async (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+
+
+                if (creds.github) await gh.deployment(argv._[3]);
 
                 cf_cmd.create(creds.name, cf_path, {
                     parameters: {
                         GitSha: creds.sha
                     }
-                }, (err) => {
-                    if (err) return console.error(`Create failed: ${err.message}`);
+                }, async (err) => {
+                    if (err) {
+                        console.error(`Create failed: ${err.message}`);
+                        if (creds.github) await gh.deployment(argv._[3], false);
+                        return;
+                    }
+
                     fs.unlinkSync(cf_path);
+
+                    if (creds.github) await gh.deployment(argv._[3], true);
                 });
             });
         } else if (command === 'update') {
-            artifacts(creds, (err) => {
+            artifacts(creds, async (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+
+                if (creds.github) await gh.deployment(argv._[3]);
 
                 cf_cmd.update(creds.name, cf_path, {
                     parameters: {
                         GitSha: creds.sha
                     }
-                }, (err) => {
-                    if (err) return console.error(`Update failed: ${err.message}`);
+                }, async (err) => {
+                    if (err && creds.github && err.reason === 'The submitted information didn\'t contain changes. Submit different information to create a change set.') {
+                        await gh.deployment(argv._[3], true);
+
+                        console.error(`Update failed: ${err.message}`);
+                    } else if (err) {
+                        console.error(`Update failed: ${err.message}`);
+                        if (creds.github) await gh.deployment(argv._[3], false);
+                        return
+                    }
+
                     fs.unlinkSync(cf_path);
                 });
             });

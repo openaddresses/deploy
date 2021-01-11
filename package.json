@@ -20,7 +20,8 @@
         "d3-queue": "^3.0.7",
         "handlebars": "^4.7.6",
         "minimist": "^1.2.5",
-        "prompt": "^1.0.0"
+        "prompt": "^1.0.0",
+        "request": "^2.88.2"
     },
     "devDependencies": {
         "documentation": "^13.1.0",
