@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.5.1
+
+- :bug: Fix GH Deployment integration
+
 ### v2.5.0
 
 - :tada: Add support for github deployments API
