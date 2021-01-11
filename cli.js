@@ -134,9 +134,16 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                     parameters: {
                         GitSha: creds.sha
                     }
-                }, (err) => {
-                    if (err) return console.error(`Create failed: ${err.message}`);
+                }, async (err) => {
+                    if (err) {
+                        console.error(`Create failed: ${err.message}`);
+                        if (creds.github) await gh.deployment(argv._[3], false);
+                        return;
+                    }
+
                     fs.unlinkSync(cf_path);
+
+                    if (creds.github) await gh.deployment(argv._[3], true);
                 });
             });
         } else if (command === 'update') {
@@ -149,8 +156,13 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                     parameters: {
                         GitSha: creds.sha
                     }
-                }, (err) => {
-                    if (err) return console.error(`Update failed: ${err.message}`);
+                }, async (err) => {
+                    if (err) {
+                        console.error(`Update failed: ${err.message}`);
+                        if (creds.github) await gh.deployment(argv._[3], false);
+                        return
+                    }
+
                     fs.unlinkSync(cf_path);
                 });
             });
