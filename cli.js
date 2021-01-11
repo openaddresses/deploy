@@ -157,7 +157,11 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                         GitSha: creds.sha
                     }
                 }, async (err) => {
-                    if (err) {
+                    if (err && creds.github && err.reason === 'The submitted information didn\'t contain changes. Submit different information to create a change set.') {
+                        await gh.deployment(argv._[3], true);
+
+                        console.error(`Update failed: ${err.message}`);
+                    } else if (err) {
                         console.error(`Update failed: ${err.message}`);
                         if (creds.github) await gh.deployment(argv._[3], false);
                         return
