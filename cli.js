@@ -7,6 +7,7 @@ const artifacts = require('./lib/artifacts');
 const schema = require('./data/cf_schema.json');
 const cf = require('@mapbox/cfn-config');
 const friend = require('@mapbox/cloudfriend');
+const GH = require('./lib/gh');
 
 const Credentials = require('./lib/creds');
 
