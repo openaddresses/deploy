@@ -7,7 +7,6 @@ const artifacts = require('./lib/artifacts');
 const schema = require('./data/cf_schema.json');
 const cf = require('@mapbox/cfn-config');
 const friend = require('@mapbox/cloudfriend');
-const GH = require('./lib/gh');
 
 const Credentials = require('./lib/creds');
 
@@ -106,6 +105,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
     }
 
     const creds = new Credentials(argv, {});
+    const gh = new (require('./lib/gh'))(creds);
 
     cf.preauth(creds);
 
@@ -124,8 +124,11 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
         if (command === 'create') {
-            artifacts(creds, (err) => {
+            artifacts(creds, async (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+
+
+                if (creds.github) await gh.deployment(argv._[3]);
 
                 cf_cmd.create(creds.name, cf_path, {
                     parameters: {
@@ -137,8 +140,10 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
                 });
             });
         } else if (command === 'update') {
-            artifacts(creds, (err) => {
+            artifacts(creds, async (err) => {
                 if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+
+                if (creds.github) await gh.deployment(argv._[3]);
 
                 cf_cmd.update(creds.name, cf_path, {
                     parameters: {
