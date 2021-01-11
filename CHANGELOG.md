@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v2.5.0
+
+- :tada: Add support for github deployments API
+- :arrow_up: generate deps update
+
 ### v2.4.0
 
 - :rocket: Use aws credentials file if profile is present
