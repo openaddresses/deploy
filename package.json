@@ -23,9 +23,8 @@
         "prompt": "^1.0.0"
     },
     "devDependencies": {
-        "@mapbox/eslint-config-geocoding": "^2.0.2",
         "documentation": "^13.1.0",
-        "eslint": "^7.0.0",
+        "eslint": "^7.17.0",
         "eslint-plugin-node": "^11.1.0"
     }
 }
