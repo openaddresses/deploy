@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.5.2
+
+- :arrow_up: Update base deps
+
 ### v2.5.1
 
 - :bug: Fix GH Deployment integration
