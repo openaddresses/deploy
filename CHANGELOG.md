@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v2.6.0
+
+- :arrow_up: Update base deps
+- :tada: Add support for reading `.deploy` file when in a sub directory of the repo
+
 ### v2.5.2
 
 - :arrow_up: Update base deps
