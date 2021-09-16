@@ -10,7 +10,9 @@
 
 ## Version History
 
-### v2.7.0
+### v2.7.1
+
+- :arrow_up: Update deps
 
 - :tada: Add support for automatically resolving `{{resolve:}}` blocks in the Outputs section of a CF template
          when using `deploy info`.
