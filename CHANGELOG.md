@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v2.8.0
+
+- :tada: Add tagger support to JSON subcommand
+
 ### v2.7.1
 
 - :arrow_up: Update deps
