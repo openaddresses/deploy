@@ -1,6 +1,6 @@
 {
     "name": "openaddresses-deploy",
-    "version": "2.7.1",
+    "version": "2.8.0",
     "main": "index.js",
     "author": "ingalls <ingalls@protonmail.com>",
     "license": "MIT",
