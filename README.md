@@ -51,10 +51,20 @@ to see a full list of options
 
 Note: The credentials file can be found in the `~/.deployrc.json` file
 
-#### Required Tags
+# Global Config `~/.deplyrc.json`
+
+## Required Tags
 
 If an account uses tags for billing, the following can be used in the `~/.deployrc.json` file to ensure that
 tags are attached to all stacks deployed to that profile
+
+| Key               | Notes |
+| ----------------- | ----- |
+| `region`          | Default AWS Account Region |
+| `accountId`       | `Required` AWS Account ID |
+| `accessKeyId`     | AWS Access Key ID (If not present in AWS creds file) |
+| `secretAccessKey` | AWS Secret Access Key (If not present in AWS creds file) |
+| `tags`            | Cloudformation Tags to apply to stack |
 
 ```JSON
 {
@@ -63,12 +73,17 @@ tags are attached to all stacks deployed to that profile
         "accountId": "<account_id>",
         "accessKeyId": "<access_key_id>",
         "secretAccessKey": "<secret_access_key>",
-        "tags": ["Project", "Owner", "Client", "<another tag>"]
+        "tags": ["Project", {
+            "Key": "Owner",
+            "Value": "ingalls"
+        }, "Client", "<another tag>"]
     }
 }
 ```
 
-### Project Management
+# Project Config `./deploy`
+
+## Project Management
 
 If you run `deploy init` for a single AWS profile, all resources created with the tool will automatically
 be deployed to this "default" account.
@@ -83,6 +98,8 @@ The `./deploy` file is created in the root directory of the git repo and follows
     "profile": "name of AWS Account profile"
 }
 ```
+
+## Artifacts
 
 ### Watching for Docker Artifacts
 
