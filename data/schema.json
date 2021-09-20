@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "profile": {
+            "type": "string",
+            "description": "AWS Credential Profile to use"
+        },
+        "artifacts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "docker": {
+                    "oneOf": [{
+                        "type": "string"
+                    },{
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },{
+                        "type": "boolean"
+                    }]
+                },
+                "lambda": {
+                    "oneOf": [{
+                        "type": "string"
+                    },{
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },{
+                        "type": "boolean"
+                    }]
+                }
+            }
+        }
+    }
+}
