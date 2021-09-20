@@ -10,6 +10,14 @@
 
 ## Version History
 
+### v3.0.0
+
+- :rocket: Add strong schema validation to DeployRC
+- :rocket: Add strong schema validation to DotDeploy
+- :tada: Add Key/Value support for tags in DepoyRC
+- :tada: Add Key & Key/Value support for tags in DotDeploy
+- :arrow_up: General Dep Update
+
 ### v2.8.0
 
 - :tada: Add tagger support to JSON subcommand
