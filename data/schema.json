@@ -35,6 +35,29 @@
                     }]
                 }
             }
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "oneOf": [{
+                    "type": "string"
+                },{
+                    "type": "object",
+                    "required": [
+                        "Key",
+                        "Value"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "Key": {
+                            "type": "string"
+                        },
+                        "Value": {
+                            "type": "string"
+                        }
+                    }
+                }]
+            }
         }
     }
 }
