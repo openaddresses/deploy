@@ -1,0 +1,50 @@
+{
+    "type": "object",
+    "patternProperties": {
+        ".*": {
+            "type": "object",
+            "required": [
+                "accountId"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "default": "us-east-1",
+                    "description": "Default AWS Region deploy should operate in"
+                },
+                "accountId": {
+                    "type": "string",
+                    "description": "AWS Account ID"
+                },
+                "github": {
+                    "type" :"string",
+                    "description": "Github Access Token for Deploy API"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [{
+                            "type": "string"
+                        },{
+                            "type": "object",
+                            "required": [
+                                "Key",
+                                "Value"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "Key": {
+                                    "type": "string"
+                                },
+                                "Value": {
+                                    "type": "string"
+                                }
+                            }
+                        }]
+                    }
+                }
+            }
+        }
+    }
+}
