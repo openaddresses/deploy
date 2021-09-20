@@ -66,6 +66,17 @@ tags are attached to all stacks deployed to that profile
 | `secretAccessKey` | AWS Secret Access Key (If not present in AWS creds file) |
 | `tags`            | Cloudformation Tags to apply to stack |
 
+### Tags
+
+Tags can be added to all resources in a stack that is deployed. The tags
+array can contain either Keys as strings, or Key/Value objects.
+
+Key as strings will be automatically populated for each resource of the CF template
+and the Value added as a Paramater of the stack
+
+Key/Value objects will be automatically populated for each resource except
+that no Parameter will be added - the Value will be used directly
+
 ```JSON
 {
     "<profile_name>": {
@@ -83,7 +94,7 @@ tags are attached to all stacks deployed to that profile
 
 # Project Config `./deploy`
 
-## Project Management
+## Required Tags
 
 If you run `deploy init` for a single AWS profile, all resources created with the tool will automatically
 be deployed to this "default" account.
@@ -95,7 +106,7 @@ The `./deploy` file is created in the root directory of the git repo and follows
 
 ```JSON
 {
-    "profile": "name of AWS Account profile"
+    "profile": "name of AWS Account profile",
 }
 ```
 
@@ -184,5 +195,23 @@ using the examples below to ensure that they are present on s3 before deploy.
             "<bucket:>/{{project}}-{{gitsha}}.zip"
         ]
     }
+}
+```
+
+### Tags
+
+Tags can be added to all resources in a stack that is deployed. The tags
+array can contain either Keys as strings, or Key/Value objects.
+
+The format to adding project specific tags is identical to profile tags
+as defined in the `~/.deployrc.json` file. See this documentation
+for complete information on tag formatting.
+
+```JSON
+{
+    "tags": ["Project", {
+        "Key": "Owner",
+        "Value": "ingalls"
+    }, "Client", "<another tag>"]
 }
 ```
