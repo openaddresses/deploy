@@ -116,63 +116,71 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
     });
 
-    friend.build(creds.template).then((template) => {
+    friend.build(creds.template).then(async (template) => {
         const cf_path = `/tmp/${hash()}.json`;
 
         template = tagger(template, creds.tags);
 
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
+        if (['create', 'update'].includes(command)) {
+            try {
+                await artifacts(creds);
+            } catch (err) {
+                return console.error(`Artifacts Check Failed: ${err.message}`);
+            }
+
+            if (creds.github) await gh.deployment(argv._[3]);
+        }
+
         if (command === 'create') {
-            artifacts(creds, async (err) => {
-                if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+            cf_cmd.create(creds.name, cf_path, {
+                parameters: {
+                    GitSha: creds.sha
+                }
+            }, async (err) => {
+                if (err) {
+                    console.error(`Create failed: ${err.message}`);
+                    if (creds.github) await gh.deployment(argv._[3], false);
+                    return;
+                }
 
+                fs.unlinkSync(cf_path);
 
-                if (creds.github) await gh.deployment(argv._[3]);
-
-                cf_cmd.create(creds.name, cf_path, {
-                    parameters: {
-                        GitSha: creds.sha
-                    }
-                }, async (err) => {
-                    if (err) {
-                        console.error(`Create failed: ${err.message}`);
-                        if (creds.github) await gh.deployment(argv._[3], false);
-                        return;
-                    }
-
-                    fs.unlinkSync(cf_path);
-
-                    if (creds.github) await gh.deployment(argv._[3], true);
-                });
+                if (creds.github) await gh.deployment(argv._[3], true);
             });
         } else if (command === 'update') {
-            artifacts(creds, async (err) => {
-                if (err) return console.error(`Artifacts Check Failed: ${err.message}`);
+            cf_cmd.update(creds.name, cf_path, {
+                parameters: {
+                    GitSha: creds.sha
+                }
+            }, async (err) => {
+                if (err) {
+                    console.error(`Update failed: ${err.message}`);
 
-                if (creds.github) await gh.deployment(argv._[3]);
-
-                cf_cmd.update(creds.name, cf_path, {
-                    parameters: {
-                        GitSha: creds.sha
-                    }
-                }, async (err) => {
-                    if (err && creds.github && err.reason === 'The submitted information didn\'t contain changes. Submit different information to create a change set.') {
+                    if (err && creds.github && err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
                         await gh.deployment(argv._[3], true);
-
-                        console.error(`Update failed: ${err.message}`);
-                    } else if (err) {
-                        console.error(`Update failed: ${err.message}`);
-                        if (creds.github) await gh.deployment(argv._[3], false);
-                        return
+                    } else if (creds.github) {
+                        await gh.deployment(argv._[3], false);
                     }
 
-                    fs.unlinkSync(cf_path);
-                });
+                    return;
+                }
+
+                fs.unlinkSync(cf_path);
             });
         } else if (command === 'delete') {
-            cf_cmd.delete(creds.name, (err) => {
-                if (err) return console.error(`Delete failed: ${err.message}`);
+            cf_cmd.delete(creds.name, async (err) => {
+                if (err) {
+                    console.error(`Delete failed: ${err.message}`);
+
+                    if (err.message.match(/does not exist/) && creds.github) {
+                        await gh.deployment_delete(argv._[3]);
+                    }
+
+                    return;
+                }
+
                 fs.unlinkSync(cf_path);
             });
         }
