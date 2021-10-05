@@ -3,9 +3,10 @@
 'use strict';
 
 const fs = require('fs');
-const artifacts = require('./lib/artifacts');
-const cf = require('@mapbox/cfn-config');
 const friend = require('@mapbox/cloudfriend');
+
+const CFN = require('./lib/cfn');
+const artifacts = require('./lib/artifacts');
 const tagger = require('./lib/tagger');
 
 const Credentials = require('./lib/creds');
@@ -98,25 +99,21 @@ if (command === 'create' && argv.help) {
     process.exit(1);
 }
 
-if (['create', 'update', 'delete'].indexOf(command) > -1) {
-    if (!argv._[3] && !argv.name) {
-        console.error(`Stack name required: run deploy ${command} --help`);
-        process.exit(1);
-    }
+main();
 
-    const creds = new Credentials(argv, {});
-    const gh = new (require('./lib/gh'))(creds);
+async function main() {
+    if (['create', 'update', 'delete'].indexOf(command) > -1) {
+        if (!argv._[3] && !argv.name) {
+            console.error(`Stack name required: run deploy ${command} --help`);
+            process.exit(1);
+        }
 
-    cf.preauth(creds);
+        const creds = new Credentials(argv, {});
+        const gh = new (require('./lib/gh'))(creds);
 
-    const cf_cmd = cf.commands({
-        name: creds.repo,
-        region: creds.region,
-        configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
-        templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
-    });
+        const cf = new CFN(creds);
 
-    friend.build(creds.template).then(async (template) => {
+        let template = await friend.build(creds.template);
         const cf_path = `/tmp/${hash()}.json`;
 
         template = tagger(template, creds.tags);
@@ -134,70 +131,66 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         }
 
         if (command === 'create') {
-            cf_cmd.create(creds.name, cf_path, {
-                parameters: {
-                    GitSha: creds.sha
-                }
-            }, async (err) => {
-                if (err) {
-                    console.error(`Create failed: ${err.message}`);
-                    if (creds.github) await gh.deployment(argv._[3], false);
-                    return;
-                }
+            try {
+                await cf.create(creds.name, cf_path, {
+                    parameters: {
+                        GitSha: creds.sha
+                    }
+                });
 
                 fs.unlinkSync(cf_path);
 
                 if (creds.github) await gh.deployment(argv._[3], true);
-            });
+            } catch (err) {
+                console.error(`Create failed: ${err.message}`);
+                if (creds.github) await gh.deployment(argv._[3], false);
+            }
         } else if (command === 'update') {
-            cf_cmd.update(creds.name, cf_path, {
-                parameters: {
-                    GitSha: creds.sha
-                }
-            }, async (err) => {
-                if (err) {
-                    console.error(`Update failed: ${err.message}`);
-
-                    if (err && creds.github && err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
-                        await gh.deployment(argv._[3], true);
-                    } else if (creds.github) {
-                        await gh.deployment(argv._[3], false);
+            try {
+                await cf.update(creds.name, cf_path, {
+                    parameters: {
+                        GitSha: creds.sha
                     }
-
-                    return;
-                }
+                });
 
                 fs.unlinkSync(cf_path);
-            });
+            } catch (err) {
+                console.error(`Update failed: ${err.message}`);
+
+                if (err && creds.github && err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
+                    await gh.deployment(argv._[3], true);
+                } else if (creds.github) {
+                    await gh.deployment(argv._[3], false);
+                }
+            }
         } else if (command === 'delete') {
-            cf_cmd.delete(creds.name, async (err) => {
-                if (err) {
-                    return console.error(`Delete failed: ${err.message}`);
-                }
-
+            try {
+                await cf.delete(creds.name);
                 fs.unlinkSync(cf_path);
-            });
+            } catch (err) {
+                console.error(`Delete failed: ${err.message}`);
+            }
         }
-    });
-} else if (mode[command]) {
-    if (['init'].includes(command)) {
-        mode[command].main(process.argv);
-    } else if (['json'].includes(command)) {
-        const creds = new Credentials(argv, {
-            template: true
-        });
+    } else if (mode[command]) {
+        if (['init'].includes(command)) {
+            mode[command].main(process.argv);
+        } else if (['json'].includes(command)) {
+            const creds = new Credentials(argv, {
+                template: true
+            });
 
-        mode[command].main(creds, process.argv);
+            mode[command].main(creds, process.argv);
+        } else {
+            const creds = new Credentials(argv, {
+                template: false
+            });
+
+            mode[command].main(creds, process.argv);
+        }
     } else {
-        const creds = new Credentials(argv, {
-            template: false
-        });
-
-        mode[command].main(creds, process.argv);
+        console.error('Subcommand not found!');
+        process.exit(1);
     }
-} else {
-    console.error('Subcommand not found!');
-    process.exit(1);
 }
 
 function hash() {
