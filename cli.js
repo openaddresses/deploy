@@ -172,13 +172,7 @@ if (['create', 'update', 'delete'].indexOf(command) > -1) {
         } else if (command === 'delete') {
             cf_cmd.delete(creds.name, async (err) => {
                 if (err) {
-                    console.error(`Delete failed: ${err.message}`);
-
-                    if (err.message.match(/does not exist/) && creds.github) {
-                        await gh.deployment_delete(argv._[3]);
-                    }
-
-                    return;
+                    return console.error(`Delete failed: ${err.message}`);
                 }
 
                 fs.unlinkSync(cf_path);
