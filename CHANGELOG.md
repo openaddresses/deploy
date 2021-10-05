@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v3.1.0
+
+- :bug: Fix a bug in marking a Github Environment as deployed
+- :rocket: Convert a bunch of internals to promises for improved readability
+
 ### v3.0.0
 
 - :rocket: Add strong schema validation to DeployRC
