@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v3.1.1
+
+- :bug: Fix bug where non-existant callback was called
+
 ### v3.1.0
 
 - :bug: Fix a bug in marking a Github Environment as deployed
