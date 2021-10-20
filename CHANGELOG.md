@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v3.2.0
+
+- :arrow_up: Update all deps. Notable: `eslint@8`
+- :white_check_mark: Add GH actions for running lint enforcement
+
 ### v3.1.1
 
 - :bug: Fix bug where non-existant callback was called
