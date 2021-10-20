@@ -2,7 +2,7 @@
     "name": "openaddresses-deploy",
     "version": "3.1.1",
     "main": "index.js",
-    "author": "ingalls <ingalls@protonmail.com>",
+    "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
     "scripts": {
         "lint": "eslint cli.js lib/**.js",
