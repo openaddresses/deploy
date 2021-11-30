@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v3.3.0
+
+- :tada: Output `AWS_ACCOUNT_ID` in `env` command
+
 ### v3.2.0
 
 - :arrow_up: Update all deps. Notable: `eslint@8`
