@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v3.4.1
+
+- :bug: Fix ESLint bug
+
 ### v3.4.0
 
 - :tada: Output `AWS_ACCOUNT_ID` in `env` command
