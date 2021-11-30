@@ -10,9 +10,13 @@
 
 ## Version History
 
-### v3.3.0
+### v3.4.0
 
 - :tada: Output `AWS_ACCOUNT_ID` in `env` command
+
+### v3.3.0
+
+- :rocket: Use `@oa` namespace
 
 ### v3.2.0
 
