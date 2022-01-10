@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v3.4.2
+
+- :bug: `colors@1.4.2` is considered harmful as a loop was intentionally introduced by the developer
+- :arrow_up: Update cfn-config to pin colors library
+
 ### v3.4.1
 
 - :bug: Fix ESLint bug
