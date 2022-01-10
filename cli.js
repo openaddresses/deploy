@@ -3,11 +3,10 @@
 'use strict';
 
 const fs = require('fs');
-const friend = require('@mapbox/cloudfriend');
 
 const CFN = require('./lib/cfn');
 const artifacts = require('./lib/artifacts');
-const tagger = require('./lib/tagger');
+const Template = require('./lib/template');
 
 const Credentials = require('./lib/creds');
 
@@ -117,12 +116,11 @@ async function main() {
 
         const cf = new CFN(creds);
 
-        let template = await friend.build(creds.template);
+        await creds.template.build(creds.tags);
+
         const cf_path = `/tmp/${hash()}.json`;
 
-        template = tagger(template, creds.tags);
-
-        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
+        fs.writeFileSync(cf_path, JSON.stringify(creds.template.json, null, 4));
 
         if (['create', 'update'].includes(command)) {
             try {
