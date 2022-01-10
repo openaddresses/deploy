@@ -17,7 +17,8 @@ const mode = {
     list: require('./lib/list'),
     init: require('./lib/init'),
     info: require('./lib/info'),
-    json: require('./lib/json')
+    json: require('./lib/json'),
+    estimate: require('./lib/estimate')
 };
 
 const argv = require('minimist')(process.argv, {
@@ -40,15 +41,18 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log();
     console.log('Create, manage and delete Cloudformation Resouces from the CLI');
     console.log();
-    console.log('Subcommands:');
+    console.log('Primary Subcommands:');
     console.log('    init      [--help]         Setup Credentials for a new AWS Account');
     console.log('    list      [--help]         List all stack assoc. with the current repo');
     console.log('    info      [--help]         Get information on a specific stack within the current repo');
     console.log('    create    [--help]         Create a new stack of the current repo');
     console.log('    update    [--help]         Update an existing stack of the current repo');
     console.log('    delete    [--help]         Delete an existing stack of the current repo');
-    console.log('    json      [--help]         Return the JSONified version of the CF template');
     console.log('    env       [--help]         Setup AWS env vars in current shell');
+    console.log();
+    console.log('Additional Subcommands:');
+    console.log('    estimate  [--help]         Estimate the cost of a CF Stack');
+    console.log('    json      [--help]         Return the JSONified version of the CF template');
     console.log();
     console.log('[options]:');
     console.log('    --profile <name>        If there are multiple AWS profiles set up, the profile to deploy');
