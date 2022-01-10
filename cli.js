@@ -112,11 +112,11 @@ async function main() {
         }
 
         const creds = new Credentials(argv, {});
+        await creds.template.build(creds.tags);
+
         const gh = new (require('./lib/gh'))(creds);
 
         const cf = new CFN(creds);
-
-        await creds.template.build(creds.tags);
 
         const cf_path = `/tmp/${hash()}.json`;
 
@@ -176,10 +176,12 @@ async function main() {
     } else if (mode[command]) {
         if (['init'].includes(command)) {
             mode[command].main(process.argv);
-        } else if (['json'].includes(command)) {
+        } else if (['json', 'estimate'].includes(command)) {
+
             const creds = new Credentials(argv, {
                 template: true
             });
+            await creds.template.build(creds.tags);
 
             mode[command].main(creds, process.argv);
         } else {
