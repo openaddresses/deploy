@@ -6,7 +6,6 @@ const fs = require('fs');
 
 const CFN = require('./lib/cfn');
 const artifacts = require('./lib/artifacts');
-const Template = require('./lib/template');
 
 const Credentials = require('./lib/creds');
 
