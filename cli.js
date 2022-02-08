@@ -5,7 +5,7 @@
 const fs = require('fs');
 const friend = require('@mapbox/cloudfriend');
 
-const CFN = require('./lib/cfn');
+const CFN = require('@openaddresses/cfn-config');
 const artifacts = require('./lib/artifacts');
 const tagger = require('./lib/tagger');
 
@@ -111,7 +111,14 @@ async function main() {
         const creds = new Credentials(argv, {});
         const gh = new (require('./lib/gh'))(creds);
 
-        const cf = new CFN(creds);
+        const cfn = CFN.preauth(creds);
+
+        const cf = new cfn.Commands({
+            name: creds.repo,
+            region: creds.region,
+            configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
+            templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
+        });
 
         let template = await friend.build(creds.template);
         const cf_path = `/tmp/${hash()}.json`;
