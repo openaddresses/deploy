@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v4.0.0
+
+- :rocket: Update to `@openaddresses/cfn-config` which uses a Promise based API
+- :pencil2: Doing a major version bump as this is a large change with potentially unseen repurcusions
+
 ### v3.4.2
 
 - :bug: `colors@1.4.2` is considered harmful as a loop was intentionally introduced by the developer
