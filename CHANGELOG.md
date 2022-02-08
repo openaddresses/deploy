@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.0.1
+
+- :arrow_up: Update core deps
+
 ### v4.0.0
 
 - :rocket: Update to `@openaddresses/cfn-config` which uses a Promise based API
