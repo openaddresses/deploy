@@ -4,7 +4,7 @@
 
 const fs = require('fs');
 
-const CFN = require('./lib/cfn');
+const CFN = require('@openaddresses/cfn-config');
 const artifacts = require('./lib/artifacts');
 
 const Credentials = require('./lib/creds');
@@ -115,7 +115,14 @@ async function main() {
 
         const gh = new (require('./lib/gh'))(creds);
 
-        const cf = new CFN(creds);
+        const cfn = CFN.preauth(creds);
+
+        const cf = new cfn.Commands({
+            name: creds.repo,
+            region: creds.region,
+            configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
+            templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
+        });
 
         const cf_path = `/tmp/${hash()}.json`;
 
