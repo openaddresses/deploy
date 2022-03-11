@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.2.0
+
+- :tada: Support HTTPS origins for GH org parsing
+
 ### v4.1.0
 
 - :tada: Ensure config bucket is present and offer to create it if not
