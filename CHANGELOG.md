@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.1.0
+
+- :tada: Ensure config bucket is present and offer to create it if not
+
 ### v4.0.1
 
 - :arrow_up: Update core deps
