@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.3.0
+
+- :rocket: Allow `deploy info ml-enabler-prod` in addition to the current `deploy info prod`
+
 ### v4.2.0
 
 - :tada: Support HTTPS origins for GH org parsing
