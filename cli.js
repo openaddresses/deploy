@@ -117,6 +117,9 @@ async function main() {
 
         const cfn = CFN.preauth(creds);
 
+        // Ensure config & template buckets exist
+        await mode.init.bucket(creds);
+
         const cf = new cfn.Commands({
             name: creds.repo,
             region: creds.region,

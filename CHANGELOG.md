@@ -10,6 +10,18 @@
 
 ## Version History
 
+### v4.3.0
+
+- :rocket: Allow `deploy info ml-enabler-prod` in addition to the current `deploy info prod`
+
+### v4.2.0
+
+- :tada: Support HTTPS origins for GH org parsing
+
+### v4.1.0
+
+- :tada: Ensure config bucket is present and offer to create it if not
+
 ### v4.0.1
 
 - :arrow_up: Update core deps
