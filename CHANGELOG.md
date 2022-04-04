@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.3.1
+
+- :arrow_up: Update base deps (Notably: `@mapbox/cloudfriend@5.1.0`
+
 ### v4.3.0
 
 - :rocket: Allow `deploy info ml-enabler-prod` in addition to the current `deploy info prod`
