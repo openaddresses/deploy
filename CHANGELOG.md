@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.3.3
+
+- :arrow_up: Update base deps
+
 ### v4.3.2
 
 - :bug: `--region` param should override json config
