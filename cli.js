@@ -51,6 +51,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('    env       [--help]         Setup AWS env vars in current shell');
     console.log();
     console.log('[options]:');
+    console.log('    --region  <region>      Override default region to perform operations in');
     console.log('    --profile <name>        If there are multiple AWS profiles set up, the profile to deploy');
     console.log('                              with must be defined either via a .deploy file or via this flag');
     console.log('    --name <stack>          Override the default naming conventions of substacks');
