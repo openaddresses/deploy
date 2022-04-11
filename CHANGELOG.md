@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v4.3.2
+
+- :bug: `--region` param should override json config
+
 ### v4.3.1
 
 - :arrow_up: Update base deps (Notably: `@mapbox/cloudfriend@5.1.0`
