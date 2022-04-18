@@ -1,7 +1,5 @@
 #! /usr/bin/env node
 
-'use strict';
-
 import fs from 'fs';
 import friend from '@mapbox/cloudfriend';
 import CFN from '@openaddresses/cfn-config';
