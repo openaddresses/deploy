@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.0.1
+
+- :pencil2: Add better error messages
+
 ### v5.0.0
 
 - :rocket: Update module to ES6 Imports
