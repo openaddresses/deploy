@@ -1,5 +1,6 @@
 {
     "name": "@openaddresses/deploy",
+    "type": "module",
     "version": "4.3.3",
     "main": "index.js",
     "author": "ingalls <nick@ingalls.ca>",

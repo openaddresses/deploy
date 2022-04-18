@@ -2,25 +2,26 @@
 
 'use strict';
 
-const fs = require('fs');
-const friend = require('@mapbox/cloudfriend');
+import fs from 'fs';
+import friend from '@mapbox/cloudfriend';
+import CFN from '@openaddresses/cfn-config';
+import minimist from 'minimist';
 
-const CFN = require('@openaddresses/cfn-config');
-const artifacts = require('./lib/artifacts');
-const tagger = require('./lib/tagger');
-
-const Credentials = require('./lib/creds');
+import Credentials from './lib/creds.js';
+import artifacts from './lib/artifacts.js';
+import tagger from './lib/tagger.js';
+import env from './lib/env.js';
+import list from './lib/list.js';
+import init from './lib/init.js';
+import info from './lib/info.js';
+import json from './lib/json.js';
 
 // Modes
 const mode = {
-    env: require('./lib/env'),
-    list: require('./lib/list'),
-    init: require('./lib/init'),
-    info: require('./lib/info'),
-    json: require('./lib/json')
+    env, list, init, info, json
 };
 
-const argv = require('minimist')(process.argv, {
+const argv = minimist(process.argv, {
     boolean: ['help', 'version'],
     string: ['profile', 'template', 'name'],
     alias: {
