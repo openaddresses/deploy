@@ -53,7 +53,6 @@ tags are attached to all stacks deployed to that profile
 | Key               | Notes |
 | ----------------- | ----- |
 | `region`          | Default AWS Account Region |
-| `accountId`       | `Required` AWS Account ID |
 | `accessKeyId`     | AWS Access Key ID (If not present in AWS creds file) |
 | `secretAccessKey` | AWS Secret Access Key (If not present in AWS creds file) |
 | `tags`            | Cloudformation Tags to apply to stack |
@@ -73,7 +72,6 @@ that no Parameter will be added - the Value will be used directly
 {
     "<profile_name>": {
         "region": "<region>",
-        "accountId": "<account_id>",
         "accessKeyId": "<access_key_id>",
         "secretAccessKey": "<secret_access_key>",
         "tags": ["Project", {
