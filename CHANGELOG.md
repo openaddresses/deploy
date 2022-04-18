@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.1.1
+
+- :bug: Fix accountId gen in env subcommand
+
 ### v5.1.0
 
 - :rocket: Remove need to have hardcoded AccountID and instead look it up dynamically
