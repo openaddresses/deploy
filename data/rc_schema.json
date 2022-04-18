@@ -3,9 +3,6 @@
     "patternProperties": {
         ".*": {
             "type": "object",
-            "required": [
-                "accountId"
-            ],
             "additionalProperties": false,
             "properties": {
                 "region": {
@@ -15,7 +12,7 @@
                 },
                 "accountId": {
                     "type": "string",
-                    "description": "AWS Account ID"
+                    "description": "[deprecated] AWS Account ID"
                 },
                 "github": {
                     "type" :"string",
