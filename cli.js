@@ -7,6 +7,7 @@ import friend from '@mapbox/cloudfriend';
 import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
 
+import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
 import artifacts from './lib/artifacts.js';
 import tagger from './lib/tagger.js';
@@ -30,7 +31,7 @@ const argv = minimist(process.argv, {
 });
 
 if (argv.version) {
-    console.log('openaddresses-deploy@' + require('./package.json').version);
+    console.log('openaddresses-deploy@' + JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
     process.exit(0);
 }
 
@@ -111,7 +112,7 @@ async function main() {
         }
 
         const creds = new Credentials(argv, {});
-        const gh = new (require('./lib/gh'))(creds);
+        const gh = new GH(creds);
 
         const cfn = CFN.preauth(creds);
 
