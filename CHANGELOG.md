@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.0.0
+
+- :rocket: Update module to ES6 Imports
+
 ### v4.3.3
 
 - :arrow_up: Update base deps
