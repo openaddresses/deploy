@@ -120,8 +120,8 @@ async function main() {
         const cf = new cfn.Commands({
             name: creds.repo,
             region: creds.region,
-            configBucket: `cfn-config-active-${creds.accountId}-${creds.region}`,
-            templateBucket: `cfn-config-templates-${creds.accountId}-${creds.region}`
+            configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
+            templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
         });
 
         let template = await friend.build(creds.template);
@@ -196,7 +196,7 @@ async function main() {
                 template: false
             });
 
-            mode[command].main(creds, process.argv);
+            await mode[command].main(creds, process.argv);
         }
     } else {
         console.error('Subcommand not found!');
