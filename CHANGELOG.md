@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.1.0
+
+- :rocket: Remove need to have hardcoded AccountID and instead look it up dynamically
+
 ### v5.0.1
 
 - :pencil2: Add better error messages
