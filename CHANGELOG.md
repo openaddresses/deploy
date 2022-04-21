@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.1.2
+
+- :bug: Fix bug in ECR artifacts check
+
 ### v5.1.1
 
 - :bug: Fix accountId gen in env subcommand
