@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.2.0
+
+- :tada: Add `--all` flag to list all stacks in all regions
+
 ### v5.1.2
 
 - :bug: Fix bug in ECR artifacts check
