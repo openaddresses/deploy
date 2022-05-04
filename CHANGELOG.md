@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.2.1
+
+- :arrow_up: Update base deps
+
 ### v5.2.0
 
 - :tada: Add `--all` flag to list all stacks in all regions
