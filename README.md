@@ -43,7 +43,7 @@ to see a full list of options
 
 Note: The credentials file can be found in the `~/.deployrc.json` file
 
-# Global Config `~/.deplyrc.json`
+# Global Config `~/.deployrc.json`
 
 ## Required Tags
 
