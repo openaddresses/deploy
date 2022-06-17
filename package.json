@@ -1,7 +1,7 @@
 {
     "name": "@openaddresses/deploy",
     "type": "module",
-    "version": "5.2.2",
+    "version": "5.3.0",
     "main": "index.js",
     "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
