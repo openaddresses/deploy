@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v5.3.1
+
+- :arrow_up: Update base deps
+
 ### v5.3.0
 
 - :rocket: Add new tag style support
