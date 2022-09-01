@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v6.1.0
+
+- :bug: Use `cfn-config.Template.read` instead of `cloudfriend.build` for compiling template
+
 ### v6.0.0
 
 - :rocket: `CFN-Config@6` now requires all cloudformation JS inputs to be Common Modules
