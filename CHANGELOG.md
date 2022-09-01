@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v6.0.0
+
+- :rocket: `CFN-Config@6` now requires all cloudformation JS inputs to be Common Modules
+
 ### v5.3.1
 
 - :arrow_up: Update base deps
