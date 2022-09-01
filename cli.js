@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
 import fs from 'fs';
-import friend from '@mapbox/cloudfriend';
 import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
 
@@ -124,7 +123,7 @@ async function main() {
             templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
         });
 
-        let template = await friend.build(creds.template);
+        let template = await CFN.Template.read(new URL(creds.template, 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
 
         template = tagger(template, creds.tags);
@@ -190,7 +189,9 @@ async function main() {
                 template: true
             });
 
-            mode[command].main(creds, process.argv);
+            console.error(creds.template);
+
+            await mode[command].main(creds, process.argv);
         } else {
             const creds = new Credentials(argv, {
                 template: false
