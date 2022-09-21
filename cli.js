@@ -7,7 +7,6 @@ import minimist from 'minimist';
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
 import artifacts from './lib/artifacts.js';
-import tagger from './lib/tagger.js';
 import env from './lib/env.js';
 import list from './lib/list.js';
 import init from './lib/init.js';
@@ -123,10 +122,8 @@ async function main() {
             templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
         });
 
-        let template = await CFN.Template.read(new URL(creds.template, 'file://'));
+        const template = await CFN.Template.read(new URL(creds.template, 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
-
-        template = tagger(template, creds.tags);
 
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
