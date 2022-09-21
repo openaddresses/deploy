@@ -14,7 +14,6 @@
 
 - :rocket: Setup Automated Deploys
 
-
 ### v6.1.0
 
 - :bug: Use `cfn-config.Template.read` instead of `cloudfriend.build` for compiling template
