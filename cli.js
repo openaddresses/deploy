@@ -12,6 +12,7 @@ import list from './lib/list.js';
 import init from './lib/init.js';
 import info from './lib/info.js';
 import json from './lib/json.js';
+import Tags from './lib/tags.js';
 
 // Modes
 const mode = {
@@ -115,7 +116,23 @@ async function main() {
         // Ensure config & template buckets exist
         await mode.init.bucket(creds);
 
+        let tags = [];
+        if (['create', 'update'].includes(command)) {
+            try {
+                await artifacts(creds);
+            } catch (err) {
+                return console.error(`Artifacts Check Failed: ${err.message}`);
+            }
+
+            if (creds.github) await gh.deployment(argv._[3]);
+
+            if (creds.tags && ['create', 'update'].includes(command)) {
+                tags = await Tags.request(creds.tags);
+            }
+        }
+
         const cf = new cfn.Commands({
+            tags,
             name: creds.repo,
             region: creds.region,
             configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
@@ -126,16 +143,6 @@ async function main() {
         const cf_path = `/tmp/${hash()}.json`;
 
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
-
-        if (['create', 'update'].includes(command)) {
-            try {
-                await artifacts(creds);
-            } catch (err) {
-                return console.error(`Artifacts Check Failed: ${err.message}`);
-            }
-
-            if (creds.github) await gh.deployment(argv._[3]);
-        }
 
         if (command === 'create') {
             try {
