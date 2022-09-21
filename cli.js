@@ -7,12 +7,12 @@ import minimist from 'minimist';
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
 import artifacts from './lib/artifacts.js';
-import tagger from './lib/tagger.js';
 import env from './lib/env.js';
 import list from './lib/list.js';
 import init from './lib/init.js';
 import info from './lib/info.js';
 import json from './lib/json.js';
+import Tags from './lib/tags.js';
 
 // Modes
 const mode = {
@@ -116,20 +116,7 @@ async function main() {
         // Ensure config & template buckets exist
         await mode.init.bucket(creds);
 
-        const cf = new cfn.Commands({
-            name: creds.repo,
-            region: creds.region,
-            configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
-            templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
-        });
-
-        let template = await CFN.Template.read(new URL(creds.template, 'file://'));
-        const cf_path = `/tmp/${hash()}.json`;
-
-        template = tagger(template, creds.tags);
-
-        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
-
+        let tags = [];
         if (['create', 'update'].includes(command)) {
             try {
                 await artifacts(creds);
@@ -138,7 +125,24 @@ async function main() {
             }
 
             if (creds.github) await gh.deployment(argv._[3]);
+
+            if (creds.tags && ['create', 'update'].includes(command)) {
+                tags = await Tags.request(creds.tags);
+            }
         }
+
+        const cf = new cfn.Commands({
+            tags,
+            name: creds.repo,
+            region: creds.region,
+            configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
+            templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
+        });
+
+        const template = await CFN.Template.read(new URL(creds.template, 'file://'));
+        const cf_path = `/tmp/${hash()}.json`;
+
+        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
 
         if (command === 'create') {
             try {
