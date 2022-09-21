@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v7.0.0
+
+- :tada: Add support for Global CF tags
+- :rocket: Remove `accountId` from deploy file
+
 ### v6.1.1
 
 - :rocket: Setup Automated Deploys
