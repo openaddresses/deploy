@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.0.1
+
+- :arrow_up: Update base deps
+
 ### v7.0.0
 
 - :tada: Add support for Global CF tags
