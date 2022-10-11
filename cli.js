@@ -68,7 +68,7 @@ if (mode[command] && argv.help) {
 main();
 
 async function main() {
-    if (['create', 'update', 'delete'].indexOf(command) > -1) {
+    if (['create', 'update', 'delete', 'cancel'].indexOf(command) > -1) {
         if (!argv._[3] && !argv.name) {
             console.error(`Stack name required: run deploy ${command} --help`);
             process.exit(1);
