@@ -4,7 +4,7 @@
 
 ## Brief
 
-- Store and manage AWS creds locally for one or more AWS accounts
+- Store and manage AWS credentials locally for one or more AWS accounts
 - Create, Update, & Delete CF based stacks from the terminal
 
 ## Install
@@ -29,7 +29,7 @@ deploy init
 
 and follow the prompts for your credentials.
 
-Note the `profile name` prompted for should idealy match the profile name as set in your AWS credentials
+Note the `profile name` prompted for should ideally match the profile name as set in your AWS credentials
 file located at `~/.aws/credentials` If the profile name is found in your AWS credentials file, the
 credentials from the file will be linked. If it does not exist, you will be prompted for a set of credentials
 
@@ -53,9 +53,13 @@ tags are attached to all stacks deployed to that profile
 | Key               | Notes |
 | ----------------- | ----- |
 | `region`          | Default AWS Account Region |
-| `accessKeyId`     | AWS Access Key ID (If not present in AWS creds file) |
-| `secretAccessKey` | AWS Secret Access Key (If not present in AWS creds file) |
+
+## Optional Tags
+
+| Key               | Notes |
+| ----------------- | ----- |
 | `tags`            | Cloudformation Tags to apply to stack |
+| `github`          | Github API token for updating deployment status |
 
 ### Tags
 
@@ -63,7 +67,7 @@ Tags can be added to all resources in a stack that is deployed. The tags
 array can contain either Keys as strings, or Key/Value objects.
 
 Key as strings will be automatically populated for each resource of the CF template
-and the Value added as a Paramater of the stack
+and the Value added as a Parameter of the stack
 
 Key/Value objects will be automatically populated for each resource except
 that no Parameter will be added - the Value will be used directly
@@ -72,8 +76,6 @@ that no Parameter will be added - the Value will be used directly
 {
     "<profile_name>": {
         "region": "<region>",
-        "accessKeyId": "<access_key_id>",
-        "secretAccessKey": "<secret_access_key>",
         "tags": ["Project", {
             "Key": "Owner",
             "Value": "ingalls"
@@ -90,7 +92,7 @@ If you run `deploy init` for a single AWS profile, all resources created with th
 be deployed to this "default" account.
 
 If multiple AWS profiles are created via `batch init`, then you will either need to use
-the `--profile <name>` flag when interacting with the API, or to specfiy the profile in your `.deploy` file
+the `--profile <name>` flag when interacting with the API, or to specify the profile in your `.deploy` file
 
 The `./deploy` file is created in the root directory of the git repo and follows the following format:
 
@@ -107,7 +109,7 @@ The `./deploy` file is created in the root directory of the git repo and follows
 By default, if a `Dockerfile` is found in the project root, the ECR will be queried before deploy to ensure
 the image has been built. IE: a git repo named `my-project` would look for an image called `my-project:<Git Sha>`.
 
-If you are building multiple docker images, or want to disable this feature, the following options are avaliable
+If you are building multiple docker images, or want to disable this feature, the following options are available
 via the `.deploy` file.
 
 **Disable ECR Check**
