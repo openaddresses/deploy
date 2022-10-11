@@ -159,6 +159,7 @@ async function main() {
             } catch (err) {
                 console.error(`Cancel failed: ${err.message}`);
             }
+        }
     } else if (mode[command]) {
         if (['init'].includes(command)) {
             mode[command].main(process.argv);
