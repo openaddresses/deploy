@@ -10,6 +10,12 @@
 
 ## Version History
 
+### v7.1.0
+
+- :rocket: Add `cancel` subcommand
+- :pencil2: Remove a bunch of README comments referring to retired auth scheme
+- :rocket: Move help text to individual files
+
 ### v7.0.1
 
 - :arrow_up: Update base deps
