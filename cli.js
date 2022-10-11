@@ -20,7 +20,6 @@ const argv = minimist(process.argv, {
 
 if (argv.version) {
     console.log('openaddresses-deploy@' + JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
-    process.exit(0);
 }
 
 if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
@@ -151,7 +150,15 @@ async function main() {
             } catch (err) {
                 console.error(`Delete failed: ${err.message}`);
             }
-        }
+        } else if (command === 'cancel') {
+            try {
+                await cf.cancel(creds.name);
+                fs.unlinkSync(cf_path);
+
+                if (creds.github) await gh.deployment(argv._[3], false);
+            } catch (err) {
+                console.error(`Cancel failed: ${err.message}`);
+            }
     } else if (mode[command]) {
         if (['init'].includes(command)) {
             mode[command].main(process.argv);
