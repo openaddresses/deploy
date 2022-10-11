@@ -7,17 +7,8 @@ import minimist from 'minimist';
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
 import artifacts from './lib/artifacts.js';
-import env from './lib/env.js';
-import list from './lib/list.js';
-import init from './lib/init.js';
-import info from './lib/info.js';
-import json from './lib/json.js';
 import Tags from './lib/tags.js';
-
-// Modes
-const mode = {
-    env, list, init, info, json
-};
+import mode from './lib/commands.js';
 
 const argv = minimist(process.argv, {
     boolean: ['help', 'version'],
@@ -46,6 +37,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
     console.log('    create    [--help]         Create a new stack of the current repo');
     console.log('    update    [--help]         Update an existing stack of the current repo');
     console.log('    delete    [--help]         Delete an existing stack of the current repo');
+    console.log('    cancel    [--help]         Cancel a stack update, rolling it back');
     console.log('    json      [--help]         Return the JSONified version of the CF template');
     console.log('    env       [--help]         Setup AWS env vars in current shell');
     console.log();
@@ -66,32 +58,7 @@ if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
 
 const command = argv._[2];
 
-if (command === 'create' && argv.help) {
-    console.log();
-    console.log('Usage: deploy create <STACK>');
-    console.log();
-    console.log('Create new AWS resource from a CF Template');
-    console.log('template should be in the following location:');
-    console.log('  cloudformation/<reponame>.template.json');
-    console.log('  cloudformation/<reponame>.template.js');
-    console.log();
-    process.exit(0);
-} else if (command === 'update' && argv.help) {
-    console.log();
-    console.log('Usage: deploy update <STACK>');
-    console.log();
-    process.exit(0);
-} else if (command === 'json' && argv.help) {
-    console.log();
-    console.log('Usage: deploy json');
-    console.log();
-    process.exit(0);
-} else if (command === 'delete' && argv.help) {
-    console.log();
-    console.log('Usage: deploy delete <STACK>');
-    console.log();
-    process.exit(0);
-} else if (mode[command] && argv.help) {
+if (mode[command] && argv.help) {
     mode[command].help();
     process.exit(0);
 } else if (argv.help) {
@@ -188,20 +155,16 @@ async function main() {
     } else if (mode[command]) {
         if (['init'].includes(command)) {
             mode[command].main(process.argv);
-        } else if (['json'].includes(command)) {
-            const creds = new Credentials(argv, {
-                template: true
-            });
-
-            console.error(creds.template);
-
-            await mode[command].main(creds, process.argv);
         } else {
-            const creds = new Credentials(argv, {
-                template: false
-            });
+            try {
+                const creds = new Credentials(argv, {
+                    template: false
+                });
 
-            await mode[command].main(creds, process.argv);
+                await mode[command].main(creds, process.argv);
+            } catch (err) {
+                console.error(`Command failed: ${err.message}`);
+            }
         }
     } else {
         console.error('Subcommand not found!');
