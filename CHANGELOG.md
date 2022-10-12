@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.1.1
+
+- :bug: Fix bug where `info` wouldn't receive AWS credentials
+
 ### v7.1.0
 
 - :rocket: Add `cancel` subcommand
