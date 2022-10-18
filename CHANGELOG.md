@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.2.0
+
+- :tada: Check for uncommitted changes before deploying
+
 ### v7.1.1
 
 - :bug: Fix bug where `info` wouldn't receive AWS credentials
