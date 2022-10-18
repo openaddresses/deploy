@@ -3,6 +3,8 @@
 import fs from 'fs';
 import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
+import inquirer from 'inquirer';
+import Git from './lib/git.js';
 
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
@@ -84,6 +86,17 @@ async function main() {
 
         let tags = [];
         if (['create', 'update'].includes(command)) {
+            if (Git.uncommitted()) {
+                const res = await inquirer.prompt([{
+                    type: 'boolean',
+                    name: 'uncommitted',
+                    default: 'N',
+                    message: 'You have uncommitted changes! Continue? (y/N)'
+                }]);
+
+                if (res.uncommitted.toLowerCase() !== 'y') return;
+            }
+
             try {
                 await artifacts(creds);
             } catch (err) {
