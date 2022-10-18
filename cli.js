@@ -3,6 +3,8 @@
 import fs from 'fs';
 import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
+import inquirer from 'inquirer';
+import Git from './lib/git.js';
 
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
@@ -94,6 +96,15 @@ async function main() {
 
             if (creds.tags && ['create', 'update'].includes(command)) {
                 tags = await Tags.request(creds.tags);
+            }
+
+            if (Git.uncommitted()) {
+                await inquirer.prompt([{
+                    type: 'boolean',
+                    name: 'uncommitted',
+                    default: false,
+                    message: 'You have uncommitted changes, are you sure you want to push? (y/N)'
+                }]);
             }
         }
 
