@@ -86,6 +86,17 @@ async function main() {
 
         let tags = [];
         if (['create', 'update'].includes(command)) {
+            if (Git.uncommitted()) {
+                const res = await inquirer.prompt([{
+                    type: 'boolean',
+                    name: 'uncommitted',
+                    default: 'N',
+                    message: 'You have uncommitted changes! Continue? (y/N)'
+                }]);
+
+                if (res.uncommitted.toLowerCase() !== 'y') return;
+            }
+
             try {
                 await artifacts(creds);
             } catch (err) {
@@ -96,15 +107,6 @@ async function main() {
 
             if (creds.tags && ['create', 'update'].includes(command)) {
                 tags = await Tags.request(creds.tags);
-            }
-
-            if (Git.uncommitted()) {
-                await inquirer.prompt([{
-                    type: 'boolean',
-                    name: 'uncommitted',
-                    default: false,
-                    message: 'You have uncommitted changes, are you sure you want to push? (y/N)'
-                }]);
             }
         }
 
