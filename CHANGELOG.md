@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.3.0
+
+- :tada: Check for unpushed changes before deploying
+
 ### v7.2.0
 
 - :tada: Check for uncommitted changes before deploying
