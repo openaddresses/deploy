@@ -5,6 +5,7 @@ import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
 import inquirer from 'inquirer';
 import Git from './lib/git.js';
+import Help from './lib/help.js';
 
 import GH from './lib/gh.js';
 import Credentials from './lib/creds.js';
@@ -24,38 +25,7 @@ if (argv.version) {
     console.log('openaddresses-deploy@' + JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
 }
 
-if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
-    console.log();
-    console.log('Usage: deploy <command> [--profile <name>] [--template <path>]');
-    console.log('              [--version] [--help]');
-    console.log();
-    console.log('Create, manage and delete Cloudformation Resouces from the CLI');
-    console.log();
-    console.log('Subcommands:');
-    console.log('    init      [--help]         Setup Credentials for a new AWS Account');
-    console.log('    list      [--help]         List all stack assoc. with the current repo');
-    console.log('    info      [--help]         Get information on a specific stack within the current repo');
-    console.log('    create    [--help]         Create a new stack of the current repo');
-    console.log('    update    [--help]         Update an existing stack of the current repo');
-    console.log('    delete    [--help]         Delete an existing stack of the current repo');
-    console.log('    cancel    [--help]         Cancel a stack update, rolling it back');
-    console.log('    json      [--help]         Return the JSONified version of the CF template');
-    console.log('    env       [--help]         Setup AWS env vars in current shell');
-    console.log();
-    console.log('[options]:');
-    console.log('    --region  <region>      Override default region to perform operations in');
-    console.log('    --profile <name>        If there are multiple AWS profiles set up, the profile to deploy');
-    console.log('                              with must be defined either via a .deploy file or via this flag');
-    console.log('    --name <stack>          Override the default naming conventions of substacks');
-    console.log('    --template <path>       The master template should be found at "cloudformation/<repo-name>.template.js(on)"');
-    console.log('                              if the project has multiple CF Templates, they can be deployed by specifying');
-    console.log('                              their location with this flag. The stack will be named:');
-    console.log('                              <repo>-<stack name>-<template name>');
-    console.log('    --version, -v           Displays version information');
-    console.log('    --help                  Prints this help message');
-    console.log();
-    process.exit(0);
-}
+if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) Help.main();
 
 const command = argv._[2];
 
