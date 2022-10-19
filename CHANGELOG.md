@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.3.2
+
+- :arrow_up: Update base deps
+
 ### v7.3.1
 
 - :rocket: Move help text to it's own file
