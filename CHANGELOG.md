@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.3.1
+
+- :rocket: Move help text to it's own file
+
 ### v7.3.0
 
 - :tada: Check for unpushed changes before deploying
