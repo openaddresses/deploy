@@ -97,6 +97,17 @@ async function main() {
                 if (res.uncommitted.toLowerCase() !== 'y') return;
             }
 
+            if (!Git.pushed()) {
+                const res = await inquirer.prompt([{
+                    type: 'boolean',
+                    name: 'unpushed',
+                    default: 'N',
+                    message: 'You have commits that haven\'t been pushed! Continue? (y/N)'
+                }]);
+
+                if (res.unpushed.toLowerCase() !== 'y') return;
+            }
+
             try {
                 await artifacts(creds);
             } catch (err) {
