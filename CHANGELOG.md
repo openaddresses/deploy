@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.3.3
+
+- :bug: DotDeploy file should allow `name` property for overriding repo name
+
 ### v7.3.2
 
 - :arrow_up: Update base deps
