@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.4.0
+
+- :bug: Support reading stack parameters from stacks created via YAML Cloudformation templates
+
 ### v7.3.3
 
 - :bug: DotDeploy file should allow `name` property for overriding repo name
