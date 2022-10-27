@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v7.5.0
+
+- :tada: Allow specifying default region at repo level
+- :tada: Don't expect a `~/.deployrc.json` file to exist
+
 ### v7.4.0
 
 - :bug: Support reading stack parameters from stacks created via YAML Cloudformation templates
