@@ -10,6 +10,10 @@
             "type": "string",
             "description": "Use a given name instead of the repo name"
         },
+        "region": {
+            "type": "string",
+            "description": "Set a region as default"
+        },
         "artifacts": {
             "type": "object",
             "additionalProperties": false,
