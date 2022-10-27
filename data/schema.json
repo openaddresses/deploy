@@ -6,6 +6,10 @@
             "type": "string",
             "description": "AWS Credential Profile to use"
         },
+        "name": {
+            "type": "string",
+            "description": "Use a given name instead of the repo name"
+        },
         "artifacts": {
             "type": "object",
             "additionalProperties": false,
