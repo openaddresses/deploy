@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v7.6.0
+
+- :bug: Include region in STS call to work in GovCloud
+- :arrow_up: Update base deps
+
 ### v7.5.0
 
 - :tada: Allow specifying default region at repo level
