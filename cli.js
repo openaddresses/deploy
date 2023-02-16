@@ -49,7 +49,7 @@ async function main() {
         const creds = await Credentials.generate(argv, {});
         const gh = new GH(creds);
 
-        const cfn = CFN.preauth(creds);
+        const cfn = CFN.preauth({ ...creds, ...creds.aws });
 
         // Ensure config & template buckets exist
         await mode.init.bucket(creds);
