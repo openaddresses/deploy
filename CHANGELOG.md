@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v7.8.0
+
+- :arrow_up: Remove now unnecessary node-fetch
+- :arrow_up: Remove unused octokit dep
+
 ### v7.7.0
 - :arrow_up: Remove top-level use of aws-sdk
 - :tada: Add support for GovCloud S3 Config Buckets
