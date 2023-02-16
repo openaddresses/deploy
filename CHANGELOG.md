@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v7.7.0
+- :arrow_up: Remove top-level use of aws-sdk
+- :tada: Add support for GovCloud S3 Config Buckets
+
 ### v7.6.0
 
 - :bug: Include region in STS call to work in GovCloud
