@@ -46,7 +46,7 @@ async function main() {
             process.exit(1);
         }
 
-        const creds = new Credentials(argv, {});
+        const creds = await Credentials.generate(argv, {});
         const gh = new GH(creds);
 
         const cfn = CFN.preauth(creds);
@@ -159,7 +159,7 @@ async function main() {
             mode[command].main(process.argv);
         } else {
             try {
-                const creds = new Credentials(argv, {
+                const creds = await Credentials.generate(argv, {
                     template: false
                 });
 
