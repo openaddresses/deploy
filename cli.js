@@ -49,12 +49,11 @@ async function main() {
         const creds = await Credentials.generate(argv, {});
         const gh = new GH(creds);
 
-        const cfn = CFN.preauth({ ...creds, ...creds.aws });
+        let tags = [];
 
         // Ensure config & template buckets exist
         await mode.init.bucket(creds);
 
-        let tags = [];
         if (['create', 'update'].includes(command)) {
             if (Git.uncommitted()) {
                 const res = await inquirer.prompt([{
@@ -91,7 +90,10 @@ async function main() {
             }
         }
 
-        const cf = new cfn.Commands({
+        const cfn = new CFN({
+            region: creds.region,
+            credentials: creds.aws
+        },{
             tags,
             name: creds.repo,
             region: creds.region,
@@ -99,7 +101,7 @@ async function main() {
             templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
         });
 
-        const template = await CFN.Template.read(new URL(creds.template, 'file://'));
+        const template = await cfn.template.read(new URL(creds.template, 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
 
         fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
