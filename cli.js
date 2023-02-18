@@ -14,7 +14,7 @@ import Tags from './lib/tags.js';
 import mode from './lib/commands.js';
 
 const argv = minimist(process.argv, {
-    boolean: ['help', 'version'],
+    boolean: ['help', 'version', 'debug'],
     string: ['profile', 'template', 'name'],
     alias: {
         version: 'v'
@@ -81,6 +81,7 @@ async function main() {
                 await artifacts(creds);
             } catch (err) {
                 return console.error(`Artifacts Check Failed: ${err.message}`);
+                if (argv.debug) throw err;
             }
 
             if (creds.github) await gh.deployment(argv._[3]);
@@ -96,7 +97,6 @@ async function main() {
         },{
             tags,
             name: creds.repo,
-            region: creds.region,
             configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
             templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
         });
@@ -104,15 +104,14 @@ async function main() {
         const template = await cfn.template.read(new URL(creds.template, 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
 
-        fs.writeFileSync(cf_path, JSON.stringify(template, null, 4));
+        fs.writeFileSync(cf_path, JSON.stringify(template.body, null, 4));
 
+        const parameters = new Map([
+            ['GitSha', creds.sha]
+        ]);
         if (command === 'create') {
             try {
-                await cf.create(creds.name, cf_path, {
-                    parameters: {
-                        GitSha: creds.sha
-                    }
-                });
+                await cfn.commands.create(creds.name, cf_path, { parameters });
 
                 fs.unlinkSync(cf_path);
 
@@ -120,14 +119,11 @@ async function main() {
             } catch (err) {
                 console.error(`Create failed: ${err.message}`);
                 if (creds.github) await gh.deployment(argv._[3], false);
+                if (argv.debug) throw err;
             }
         } else if (command === 'update') {
             try {
-                await cf.update(creds.name, cf_path, {
-                    parameters: {
-                        GitSha: creds.sha
-                    }
-                });
+                await cfn.commands.update(creds.name, cf_path, { parameters });
 
                 fs.unlinkSync(cf_path);
             } catch (err) {
@@ -138,22 +134,25 @@ async function main() {
                 } else if (creds.github) {
                     await gh.deployment(argv._[3], false);
                 }
+                if (argv.debug) throw err;
             }
         } else if (command === 'delete') {
             try {
-                await cf.delete(creds.name);
+                await cfn.commands.delete(creds.name);
                 fs.unlinkSync(cf_path);
             } catch (err) {
                 console.error(`Delete failed: ${err.message}`);
+                if (argv.debug) throw err;
             }
         } else if (command === 'cancel') {
             try {
-                await cf.cancel(creds.name);
+                await cfn.commands.cancel(creds.name);
                 fs.unlinkSync(cf_path);
 
                 if (creds.github) await gh.deployment(argv._[3], false);
             } catch (err) {
                 console.error(`Cancel failed: ${err.message}`);
+                if (argv.debug) throw err;
             }
         }
     } else if (mode[command]) {
@@ -168,6 +167,7 @@ async function main() {
                 await mode[command].main(creds, process.argv);
             } catch (err) {
                 console.error(`Command failed: ${err.message}`);
+                if (argv.debug) throw err;
             }
         }
     } else {
