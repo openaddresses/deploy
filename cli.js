@@ -1,14 +1,13 @@
 #! /usr/bin/env node
 
 import fs from 'fs';
-import CFN from '@openaddresses/cfn-config';
 import minimist from 'minimist';
 import inquirer from 'inquirer';
 import Git from './lib/git.js';
 import Help from './lib/help.js';
 
 import GH from './lib/gh.js';
-import Credentials from './lib/creds.js';
+import Context from './lib/context.js';
 import artifacts from './lib/artifacts.js';
 import Tags from './lib/tags.js';
 import mode from './lib/commands.js';
@@ -40,19 +39,20 @@ if (mode[command] && argv.help) {
 main();
 
 async function main() {
+    const context = await Context.generate(argv);
+
     if (['create', 'update', 'delete', 'cancel'].indexOf(command) > -1) {
         if (!argv._[3] && !argv.name) {
             console.error(`Stack name required: run deploy ${command} --help`);
             process.exit(1);
         }
 
-        const creds = await Credentials.generate(argv, {});
-        const gh = new GH(creds);
+        const gh = new GH(context);
 
-        let tags = [];
+        const tags = [];
 
         // Ensure config & template buckets exist
-        await mode.init.bucket(creds);
+        await mode.init.bucket(context);
 
         if (['create', 'update'].includes(command)) {
             if (Git.uncommitted()) {
@@ -78,67 +78,57 @@ async function main() {
             }
 
             try {
-                await artifacts(creds);
+                await artifacts(context);
             } catch (err) {
-                return console.error(`Artifacts Check Failed: ${err.message}`);
+                console.error(`Artifacts Check Failed: ${err.message}`);
                 if (argv.debug) throw err;
             }
 
-            if (creds.github) await gh.deployment(argv._[3]);
+            if (context.github) await gh.deployment(argv._[3]);
 
-            if (creds.tags && ['create', 'update'].includes(command)) {
-                tags = await Tags.request(creds.tags);
+            if (context.tags && ['create', 'update'].includes(command)) {
+                context.cfn.commands.config.tags = await Tags.request(context.tags);
             }
         }
 
-        const cfn = new CFN({
-            region: creds.region,
-            credentials: creds.aws
-        },{
-            tags,
-            name: creds.repo,
-            configBucket: `cfn-config-active-${await creds.accountId()}-${creds.region}`,
-            templateBucket: `cfn-config-templates-${await creds.accountId()}-${creds.region}`
-        });
-
-        const template = await cfn.template.read(new URL(creds.template, 'file://'));
+        const template = await context.cfn.template.read(new URL(context.template, 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
 
         fs.writeFileSync(cf_path, JSON.stringify(template.body, null, 4));
 
         const parameters = new Map([
-            ['GitSha', creds.sha]
+            ['GitSha', context.sha]
         ]);
         if (command === 'create') {
             try {
-                await cfn.commands.create(creds.name, cf_path, { parameters });
+                await context.cfn.commands.create(context.name, cf_path, { parameters });
 
                 fs.unlinkSync(cf_path);
 
-                if (creds.github) await gh.deployment(argv._[3], true);
+                if (context.github) await gh.deployment(argv._[3], true);
             } catch (err) {
                 console.error(`Create failed: ${err.message}`);
-                if (creds.github) await gh.deployment(argv._[3], false);
+                if (context.github) await gh.deployment(argv._[3], false);
                 if (argv.debug) throw err;
             }
         } else if (command === 'update') {
             try {
-                await cfn.commands.update(creds.name, cf_path, { parameters });
+                await context.cfn.commands.update(context.name, cf_path, { parameters });
 
                 fs.unlinkSync(cf_path);
             } catch (err) {
                 console.error(`Update failed: ${err.message}`);
 
-                if (err && creds.github && err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
+                if (err && context.github && err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
                     await gh.deployment(argv._[3], true);
-                } else if (creds.github) {
+                } else if (context.github) {
                     await gh.deployment(argv._[3], false);
                 }
                 if (argv.debug) throw err;
             }
         } else if (command === 'delete') {
             try {
-                await cfn.commands.delete(creds.name);
+                await context.cfn.commands.delete(context.name);
                 fs.unlinkSync(cf_path);
             } catch (err) {
                 console.error(`Delete failed: ${err.message}`);
@@ -146,10 +136,10 @@ async function main() {
             }
         } else if (command === 'cancel') {
             try {
-                await cfn.commands.cancel(creds.name);
+                await context.cfn.commands.cancel(context.name);
                 fs.unlinkSync(cf_path);
 
-                if (creds.github) await gh.deployment(argv._[3], false);
+                if (context.github) await gh.deployment(argv._[3], false);
             } catch (err) {
                 console.error(`Cancel failed: ${err.message}`);
                 if (argv.debug) throw err;
@@ -160,11 +150,7 @@ async function main() {
             mode[command].main(process.argv);
         } else {
             try {
-                const creds = await Credentials.generate(argv, {
-                    template: false
-                });
-
-                await mode[command].main(creds, process.argv);
+                await mode[command].main(context, process.argv);
             } catch (err) {
                 console.error(`Command failed: ${err.message}`);
                 if (argv.debug) throw err;
