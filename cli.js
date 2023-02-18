@@ -36,7 +36,12 @@ if (mode[command] && argv.help) {
     process.exit(1);
 }
 
-main();
+try {
+    await main();
+} catch (err) {
+    console.error(`Unknown Error: ${err.message}`);
+    if (argv.debug) throw err;
+}
 
 async function main() {
     const context = await Context.generate(argv);
