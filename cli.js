@@ -44,9 +44,9 @@ try {
 }
 
 async function main() {
-    const context = await Context.generate(argv);
-
     if (['create', 'update', 'delete', 'cancel'].indexOf(command) > -1) {
+        const context = await Context.generate(argv);
+
         if (!argv._[3] && !argv.name) {
             console.error(`Stack name required: run deploy ${command} --help`);
             process.exit(1);
@@ -153,7 +153,13 @@ async function main() {
     } else if (mode[command]) {
         if (['init'].includes(command)) {
             mode[command].main(process.argv);
+        } else if (['env'].includes(command)) {
+            argv.template = false;
+            const context = await Context.generate(argv);
+            mode[command].main(context, process.argv);
         } else {
+            const context = await Context.generate(argv);
+
             try {
                 await mode[command].main(context, process.argv);
             } catch (err) {
