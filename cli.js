@@ -87,6 +87,7 @@ async function main() {
             } catch (err) {
                 console.error(`Artifacts Check Failed: ${err.message}`);
                 if (argv.debug) throw err;
+                process.exit(1);
             }
 
             if (context.github) await gh.deployment(argv._[3]);
