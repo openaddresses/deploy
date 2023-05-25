@@ -54,8 +54,6 @@ async function main() {
 
         const gh = new GH(context);
 
-        const tags = [];
-
         // Ensure config & template buckets exist
         await mode.init.bucket(context);
 

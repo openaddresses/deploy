@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.0.0
+
+- :rocket: Update to CFN-Config@7
+
 ### v7.8.0
 
 - :arrow_up: Remove now unnecessary node-fetch
