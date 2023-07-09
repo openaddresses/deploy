@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.0.2
+
+- :bug: Fix path resolution in `--template` parameter
+
 ### v8.0.1
 
 - :rocket: Update to CFN-Config@7.1 to fix S3 Body parsing

@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
 import minimist from 'minimist';
 import inquirer from 'inquirer';
 import Git from './lib/git.js';
@@ -95,7 +96,7 @@ async function main() {
             }
         }
 
-        const template = await context.cfn.template.read(new URL(context.template, 'file://'));
+        const template = await context.cfn.template.read(new URL(path.resolve(process.cwd(), context.template), 'file://'));
         const cf_path = `/tmp/${hash()}.json`;
 
         fs.writeFileSync(cf_path, JSON.stringify(template.body, null, 4));
