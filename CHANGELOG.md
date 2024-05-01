@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.1.1
+
+- :bug: Fix name resolution when using sub-template
+
 ### v8.1.0
 
 - :arrow_up: Update Core Dependencies

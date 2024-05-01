@@ -94,7 +94,8 @@ async function main() {
 
             if (context.tags && ['create', 'update'].includes(command)) {
                 let existingTemplate = null;
-                if (command === 'update') existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.stack}`, context.region, true, false);
+
+                if (command === 'update') existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.name}`, context.region, true, false);
 
                 context.cfn.commands.config.tags = await Tags.request(context, existingTemplate);
             }
