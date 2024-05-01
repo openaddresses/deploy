@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v8.1.0
+
+- :arrow_up: Update Core Dependencies
+- :rocket: Pull and populate existing tags when updating a stack
+
 ### v8.0.2
 
 - :bug: Fix path resolution in `--template` parameter

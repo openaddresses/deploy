@@ -23,6 +23,7 @@ const argv = minimist(process.argv, {
 
 if (argv.version) {
     console.log('openaddresses-deploy@' + JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
+    process.exit(0)
 }
 
 if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) Help.main();
@@ -92,7 +93,10 @@ async function main() {
             if (context.github) await gh.deployment(argv._[3]);
 
             if (context.tags && ['create', 'update'].includes(command)) {
-                context.cfn.commands.config.tags = await Tags.request(context.tags);
+                let existingTemplate = null;
+                if (command === 'update') existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.stack}`, context.region, true, false);
+
+                context.cfn.commands.config.tags = await Tags.request(context, existingTemplate);
             }
         }
 
