@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.3.1
+
+- :rocket: Add support on update
+
 ### v8.3.0
 
 - :rocket: Support for Descriptions being parsed and posted from Template
