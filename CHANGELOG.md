@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.2.0
+
+- :rocket: Internal Support for Descriptions in CloudFormation Templates
+
 ### v8.1.1
 
 - :bug: Fix name resolution when using sub-template
