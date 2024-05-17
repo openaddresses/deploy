@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.3.0
+
+- :rocket: Support for Descriptions being parsed and posted from Template
+
 ### v8.2.0
 
 - :rocket: Internal Support for Descriptions in CloudFormation Templates
