@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,7 +23,7 @@ const argv = minimist(process.argv, {
 
 if (argv.version) {
     console.log('openaddresses-deploy@' + JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
-    process.exit(0)
+    process.exit(0);
 }
 
 if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) Help.main();

@@ -6,14 +6,14 @@
     "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
     "scripts": {
-        "lint": "eslint cli.js lib/**.js",
+        "lint": "eslint cli.js lib/",
         "doc": "documentation build cli.js -f html -o docs"
     },
     "bin": {
         "deploy": "cli.js"
     },
     "engines": {
-        "node": ">18"
+        "node": "> 21"
     },
     "dependencies": {
         "@aws-sdk/client-cloudformation": "^3.272.0",
@@ -32,7 +32,7 @@
     },
     "devDependencies": {
         "documentation": "^14.0.0",
-        "eslint": "^8.0.1",
-        "eslint-plugin-node": "^11.1.0"
+        "eslint": "^9.0.0",
+        "eslint-plugin-n": "^17.10.3"
     }
 }
