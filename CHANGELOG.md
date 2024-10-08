@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v8.4.0
+
+- :rocket: Human readable error when outside of git repository
+
 ### v8.3.1
 
 - :rocket: Add support on update
