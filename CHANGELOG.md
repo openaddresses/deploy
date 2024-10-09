@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.0.0
+
+- :rocket: Use `AWS_REGION` in env output to mirror all modern AWS SDKs/CLIs
+
 ### v8.4.0
 
 - :rocket: Human readable error when outside of git repository
