@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.1.0
+
+- :tada: Add support for building `aws ecs execute-command` interactively
+
 ### v9.0.0
 
 - :rocket: Use `AWS_REGION` in env output to mirror all modern AWS SDKs/CLIs
