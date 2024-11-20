@@ -26,11 +26,9 @@
                         "items": {
                             "type": "string"
                         }
-                    },{
-                        "type": "boolean"
                     }]
                 },
-                "lambda": {
+                "s3": {
                     "oneOf": [{
                         "type": "string"
                     },{
@@ -38,8 +36,6 @@
                         "items": {
                             "type": "string"
                         }
-                    },{
-                        "type": "boolean"
                     }]
                 }
             }

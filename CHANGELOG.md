@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.2.0
+
+- :tada: Increase number of template options and rename lambda => s3
+
 ### v9.1.0
 
 - :tada: Add support for building `aws ecs execute-command` interactively
