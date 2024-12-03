@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.3.0
+
+- :rocket: Change `StackName` var to `RootStackName` and `FullStackName`
+
 ### v9.2.0
 
 - :tada: Increase number of template options and rename lambda => s3
