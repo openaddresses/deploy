@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.4.1
+
+- :bug: Don't prefix deploy template with body
+
 ### v9.4.0
 
 - :bug: Use NextToken in list API if there are more stacks than a single List Stacks API call can show
