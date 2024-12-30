@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.5.0
+
+- :bug: Fix Github Deployment
+
 ### v9.4.1
 
 - :bug: Don't prefix deploy template with body
