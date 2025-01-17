@@ -126,6 +126,8 @@ async function main() {
                 await context.cfn.commands.update(context.name, cf_path, { parameters });
 
                 fs.unlinkSync(cf_path);
+
+                await gh.deployment(argv._[3], true);
             } catch (err) {
                 console.error(`Update failed: ${err.message}`);
 
@@ -134,6 +136,7 @@ async function main() {
                 } else if (context.github) {
                     await gh.deployment(argv._[3], false);
                 }
+
                 if (argv.debug) throw err;
             }
         } else if (command === 'delete') {

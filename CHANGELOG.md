@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.6.0
+
+- :bug: Fix finalizing GH Deployment
+
 ### v9.5.0
 
 - :bug: Fix Github Deployment
