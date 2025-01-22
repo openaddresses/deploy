@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.6.1
+
+- :bug: Fix Map => Object output
+
 ### v9.6.0
 
 - :bug: Fix finalizing GH Deployment
