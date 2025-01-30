@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.7.0
+
+- :tada: Add `ora` for watching for external artifacts
+
 ### v9.6.1
 
 - :bug: Fix Map => Object output

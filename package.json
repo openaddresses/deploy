@@ -25,6 +25,7 @@
         "@aws-sdk/client-sts": "^3.730.0",
         "@aws-sdk/credential-providers": "^3.272.0",
         "@openaddresses/cfn-config": "^7.1.0",
+        "ora": "^8.1.1",
         "ajv": "^8.6.3",
         "cli-table": "^0.3.1",
         "handlebars": "^4.7.7",
