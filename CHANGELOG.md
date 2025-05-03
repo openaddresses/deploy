@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.8.0
+
+- :tada: Update CFN-Config to latest version which supports regions created after 2022
+
 ### v9.7.0
 
 - :tada: Add `ora` for watching for external artifacts
