@@ -208,26 +208,3 @@ for complete information on tag formatting.
 }
 ```
 
-### GitHub Status Check Polling
-
-By default, when GitHub integration is enabled, the deploy tool will poll GitHub status checks before proceeding with deployments. This ensures that all CI checks pass before deployment begins.
-
-The polling behavior can be configured in your `.deploy` file:
-
-```JSON
-{
-    "github": {
-        "polling": {
-            "timeout": 1800000,
-            "interval": 30000
-        }
-    }
-}
-```
-
-**Configuration Options:**
-
-- `timeout`: Maximum time to wait for status checks in milliseconds (1 minute to 1 hour, default: 30 minutes)
-- `interval`: Time between status check polls in milliseconds (5 seconds to 5 minutes, default: 30 seconds)
-
-If any status checks fail, the deployment will be aborted with an error message indicating which checks failed.
