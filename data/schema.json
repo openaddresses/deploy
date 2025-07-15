@@ -62,6 +62,34 @@
                     }
                 }]
             }
+        },
+        "github": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "GitHub integration settings",
+            "properties": {
+                "polling": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Status check polling configuration",
+                    "properties": {
+                        "timeout": {
+                            "type": "number",
+                            "minimum": 60000,
+                            "maximum": 3600000,
+                            "default": 1800000,
+                            "description": "Timeout for status check polling in milliseconds (1 minute to 1 hour, default: 30 minutes)"
+                        },
+                        "interval": {
+                            "type": "number",
+                            "minimum": 5000,
+                            "maximum": 300000,
+                            "default": 30000,
+                            "description": "Interval between status check polls in milliseconds (5 seconds to 5 minutes, default: 30 seconds)"
+                        }
+                    }
+                }
+            }
         }
     }
 }

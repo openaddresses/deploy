@@ -93,7 +93,7 @@ async function main() {
             // Poll GitHub status checks before proceeding with deployment
             if (context.github) {
                 try {
-                    await gh.pollStatusChecks();
+                    await gh.pollStatusChecks(context.githubPolling);
                 } catch (err) {
                     console.error(`Status Check Polling Failed: ${err.message}`);
                     if (argv.debug) throw err;
