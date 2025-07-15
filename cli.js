@@ -14,8 +14,8 @@ import Tags from './lib/tags.js';
 import mode from './lib/commands.js';
 
 const argv = minimist(process.argv, {
-    boolean: ['help', 'version', 'debug'],
-    string: ['profile', 'template', 'name'],
+    boolean: ['help', 'version', 'debug', 'force'],
+    string: ['profile', 'region', 'template', 'name'],
     alias: {
         version: 'v'
     }
