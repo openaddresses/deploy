@@ -90,6 +90,17 @@ async function main() {
                 process.exit(1);
             }
 
+            // Poll GitHub status checks before proceeding with deployment
+            if (context.github) {
+                try {
+                    await gh.pollStatusChecks();
+                } catch (err) {
+                    console.error(`Status Check Polling Failed: ${err.message}`);
+                    if (argv.debug) throw err;
+                    process.exit(1);
+                }
+            }
+
             if (context.github) await gh.deployment(argv._[3]);
 
             if (context.tags && ['create', 'update'].includes(command)) {
