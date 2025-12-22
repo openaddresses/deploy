@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.9.0
+
+- :rocket: Standardize Handlebar Variables
+
 ### v9.8.0
 
 - :tada: Update CFN-Config to latest version which supports regions created after 2022
