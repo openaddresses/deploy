@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.9.1
+
+- :rocket: Include GH Status Checks being skipped in --force behavior
+
 ### v9.9.0
 
 - :rocket: Standardize Handlebar Variables
