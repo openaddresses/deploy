@@ -7,6 +7,7 @@
     "license": "MIT",
     "scripts": {
         "lint": "eslint cli.js lib/",
+        "test": "vitest run",
         "doc": "documentation build cli.js -f html -o docs"
     },
     "bin": {
@@ -36,6 +37,7 @@
     "devDependencies": {
         "documentation": "^14.0.0",
         "eslint": "^9.0.0",
-        "eslint-plugin-n": "^17.10.3"
+        "eslint-plugin-n": "^17.10.3",
+        "vitest": "^3.0.0"
     }
 }
