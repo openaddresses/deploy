@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v9.10.0
+
+- :bug: Fix order of precindence for `--region` flag to ensure it overrides config file region -- @camilleanne
+- :white_check_mark: Add tests for `--region` flag behavior -- @camilleanne
+
 ### v9.9.1
 
 - :rocket: Include GH Status Checks being skipped in --force behavior
