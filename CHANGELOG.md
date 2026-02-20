@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v9.10.1
+
+- :rocket: Update NPM Release Process
+
 ### v9.10.0
 
 - :bug: Fix order of precindence for `--region` flag to ensure it overrides config file region -- @camilleanne

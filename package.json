@@ -16,6 +16,10 @@
     "engines": {
         "node": "> 21"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/openaddresses/deploy.git"
+    },
     "dependencies": {
         "@aws-sdk/client-cloudformation": "^3.272.0",
         "@aws-sdk/client-ec2": "^3.272.0",
