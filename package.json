@@ -7,7 +7,7 @@
     "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
     "scripts": {
-        "build": "node -e \"const fs=require('node:fs'); const path=require('node:path'); const cp=require('node:child_process'); const distDir=path.resolve('dist'); const sourceDataDir=path.resolve('data'); const targetDataDir=path.join(distDir,'data'); fs.rmSync(distDir,{recursive:true,force:true}); cp.execSync('tsc -p tsconfig.json',{stdio:'inherit'}); fs.mkdirSync(targetDataDir,{recursive:true}); for (const file of fs.readdirSync(sourceDataDir)) { if (file.endsWith('.json')) fs.copyFileSync(path.join(sourceDataDir,file), path.join(targetDataDir,file)); }\"",
+        "build": "tsc -p tsconfig.json && cp -r data dist/ && cp package.json dist/",
         "typecheck": "tsc --noEmit -p tsconfig.json",
         "lint": "eslint cli.ts lib/ test/",
         "test": "vitest run",
