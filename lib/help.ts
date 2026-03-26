@@ -1,18 +1,17 @@
 import mode from './commands.js';
 
-/**
- * @class
- */
-export default class help {
-    static main() {
+export default class Help {
+    static main(): never {
         console.log();
         console.log('Usage: deploy <command> [--profile <name>] [--template <path>]');
         console.log('              [--version] [--help]');
         console.log();
-        console.log('Create, manage and delete Cloudformation Resouces from the CLI');
+        console.log('Create, manage and delete CloudFormation resources from the CLI');
         console.log();
         console.log('Subcommands:');
-        for (const m in mode) console.log(`    ${m.padEnd(12)} [--help]        ${mode[m].short}`);
+        for (const name of Object.keys(mode)) {
+            console.log(`    ${name.padEnd(12)} [--help]        ${mode[name].short}`);
+        }
         console.log();
         console.log('[options]:');
         console.log('    --region  <region>      Override default region to perform operations in');
@@ -20,7 +19,7 @@ export default class help {
         console.log('                              with must be defined either via a .deploy file or via this flag');
         console.log('    --name <stack>          Override the default naming conventions of substacks');
         console.log('    --template <path>       The master template should be found at "cloudformation/<repo-name>.template.js(on)"');
-        console.log('                              if the project has multiple CF Templates, they can be deployed by specifying');
+        console.log('                              if the project has multiple CF templates, they can be deployed by specifying');
         console.log('                              their location with this flag. The stack will be named:');
         console.log('                              <repo>-<stack name>-<template name>');
         console.log('    --version, -v           Displays version information');

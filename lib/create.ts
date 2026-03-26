@@ -1,13 +1,7 @@
-/**
- * @class
- */
 export default class Create {
     static short = 'Create a new stack of the current repo';
 
-    /**
-     * Print help documentation to the screen
-     */
-    static help() {
+    static help(): void {
         console.log();
         console.log('Create a new CloudFormation stack');
         console.log();

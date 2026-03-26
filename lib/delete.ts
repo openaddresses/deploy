@@ -1,13 +1,7 @@
-/**
- * @class
- */
 export default class Delete {
     static short = 'Delete an existing stack of the current repo';
 
-    /**
-     * Print help documentation to the screen
-     */
-    static help() {
+    static help(): void {
         console.log();
         console.log('Delete a CloudFormation stack');
         console.log();

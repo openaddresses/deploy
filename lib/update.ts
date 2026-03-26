@@ -1,13 +1,7 @@
-/**
- * @class
- */
 export default class Update {
     static short = 'Update an existing stack of the current repo';
 
-    /**
-     * Print help documentation to the screen
-     */
-    static help() {
+    static help(): void {
         console.log();
         console.log('Update a CloudFormation stack');
         console.log();

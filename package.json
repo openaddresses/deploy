@@ -2,16 +2,20 @@
     "name": "@openaddresses/deploy",
     "type": "module",
     "version": "9.10.2",
-    "main": "index.js",
+    "main": "dist/cli.js",
+    "types": "dist/cli.d.ts",
     "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
     "scripts": {
-        "lint": "eslint cli.js lib/",
+        "build": "node -e \"const fs=require('node:fs'); const path=require('node:path'); const cp=require('node:child_process'); const distDir=path.resolve('dist'); const sourceDataDir=path.resolve('data'); const targetDataDir=path.join(distDir,'data'); fs.rmSync(distDir,{recursive:true,force:true}); cp.execSync('tsc -p tsconfig.json',{stdio:'inherit'}); fs.mkdirSync(targetDataDir,{recursive:true}); for (const file of fs.readdirSync(sourceDataDir)) { if (file.endsWith('.json')) fs.copyFileSync(path.join(sourceDataDir,file), path.join(targetDataDir,file)); }\"",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "lint": "eslint cli.ts lib/ test/",
         "test": "vitest run",
-        "doc": "documentation build cli.js -f html -o docs"
+        "doc": "npm run build && documentation build dist/cli.js -f html -o docs",
+        "prepack": "npm run build"
     },
     "bin": {
-        "deploy": "cli.js"
+        "deploy": "dist/cli.js"
     },
     "engines": {
         "node": "> 21"
@@ -29,7 +33,7 @@
         "@aws-sdk/client-secrets-manager": "^3.272.0",
         "@aws-sdk/client-sts": "^3.730.0",
         "@aws-sdk/credential-providers": "^3.272.0",
-        "@openaddresses/cfn-config": "^7.5.0",
+        "@openaddresses/cfn-config": "^8.0.0",
         "ora": "^9.0.0",
         "ajv": "^8.6.3",
         "cli-table": "^0.3.1",
@@ -39,9 +43,16 @@
         "prompt": "^1.0.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.0",
+        "@types/cli-table": "^0.3.4",
+        "@types/minimist": "^1.2.5",
+        "@types/node": "^25.0.0",
+        "@types/prompt": "^1.1.8",
         "documentation": "^14.0.0",
         "eslint": "^10.0.0",
         "eslint-plugin-n": "^17.10.3",
-        "vitest": "^3.0.0"
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.46.1",
+        "vitest": "^4.0.0"
     }
 }

@@ -1,15 +1,11 @@
-/**
- * @class
- */
+import type { DeployContext } from './types.js';
+
 export default class Json {
     static short = 'Return the JSONified version of the CF template';
 
-    /**
-     * Print help documentation to the screen
-     */
-    static help() {
+    static help(): void {
         console.log();
-        console.log('Return the JSONified Cloudformation Template');
+        console.log('Return the JSONified CloudFormation template');
         console.log();
         console.log('Usage: deploy json [--help]');
         console.log();
@@ -18,12 +14,11 @@ export default class Json {
         console.log();
     }
 
-    /**
-     * Output a JSONified version of the cloudformation template
-     *
-     * @param {Context} context Context
-     */
-    static async main(context) {
+    static async main(context: DeployContext): Promise<void> {
+        if (!context.template) {
+            throw new Error('Template path is not configured');
+        }
+
         const template = await context.cfn.template.read(new URL(context.template, 'file://'));
         console.log(JSON.stringify(template.body));
     }

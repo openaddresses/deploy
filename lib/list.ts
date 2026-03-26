@@ -1,17 +1,12 @@
-import { CloudFormationClient, ListStacksCommand } from '@aws-sdk/client-cloudformation';
-import { EC2Client, DescribeRegionsCommand } from '@aws-sdk/client-ec2';
 import minimist from 'minimist';
+import { ListStacksCommand, CloudFormationClient } from '@aws-sdk/client-cloudformation';
+import { DescribeRegionsCommand, EC2Client } from '@aws-sdk/client-ec2';
+import type { DeployArgv, DeployContext } from './types.js';
 
-/**
- * @class
- */
 export default class List {
     static short = 'List all stack assoc. with the current repo';
 
-    /**
-     * Print help documentation to the screen
-     */
-    static help() {
+    static help(): void {
         console.log();
         console.log('Usage: deploy list');
         console.log();
@@ -23,47 +18,45 @@ export default class List {
         console.log();
     }
 
-    /**
-     * List current stacks deployed to a given profile
-     *
-     * @param {Context} context
-     * @param {Object} argv
-     */
-    static async main(context, argv) {
-        argv = minimist(argv, {
+    static async main(context: DeployContext, argvInput: string[]): Promise<void> {
+        const argv = minimist(argvInput, {
             boolean: ['all'],
             string: ['region']
-        });
+        }) as DeployArgv;
 
-        if (argv.all && argv.region) throw new Error('--all & --region cannot be used together');
+        if (argv.all && argv.region) {
+            throw new Error('--all & --region cannot be used together');
+        }
 
-        const regions = [];
+        const regions: string[] = [];
 
         if (argv.all) {
             const ec2 = new EC2Client({
                 credentials: context.aws,
                 region: context.region
             });
-
-            (await ec2.send(new DescribeRegionsCommand())).Regions.forEach((region) => {
-                regions.push(region.Endpoint.replace('ec2.', '').replace('.amazonaws.com', ''));
-            });
+            const response = await ec2.send(new DescribeRegionsCommand({}));
+            for (const region of response.Regions ?? []) {
+                if (region.RegionName) {
+                    regions.push(region.RegionName);
+                }
+            }
         } else {
-            regions.push(context.region);
+            regions.push(argv.region ?? context.region);
         }
 
         for (const region of regions) {
-            const cf = new CloudFormationClient({
-                region, credentials: context.aws
+            const cloudFormation = new CloudFormationClient({
+                region,
+                credentials: context.aws
             });
 
             console.log(`# Region: ${region}`);
 
-            let res;
+            let nextToken: string | undefined;
             do {
-                res = await cf.send(new ListStacksCommand({
-                    NextToken: res ? res.NextToken : undefined,
-                    // All but "DELETE_COMPLETE"
+                const response = await cloudFormation.send(new ListStacksCommand({
+                    NextToken: nextToken,
                     StackStatusFilter: [
                         'CREATE_IN_PROGRESS',
                         'CREATE_FAILED',
@@ -83,12 +76,14 @@ export default class List {
                     ]
                 }));
 
-                for (const stack of res.StackSummaries) {
-                    if (stack.StackName.match(new RegExp(`^${context.repo}-`))) {
+                for (const stack of response.StackSummaries ?? []) {
+                    if (stack.StackName && new RegExp(`^${context.repo}-`).test(stack.StackName)) {
                         console.log(stack.StackName, stack.StackStatus, stack.CreationTime);
                     }
                 }
-            } while (res.NextToken);
+
+                nextToken = response.NextToken;
+            } while (nextToken);
         }
     }
 }
