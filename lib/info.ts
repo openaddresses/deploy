@@ -1,7 +1,7 @@
 import Table from 'cli-table';
 import minimist from 'minimist';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import type { CloudFormationLookupInfo } from '@openaddresses/cfn-config';
+import type { InfoOutput } from '@openaddresses/cfn-config';
 import type { DeployArgv, DeployContext } from './types.js';
 
 export default class Info {
@@ -40,7 +40,7 @@ export default class Info {
             region: context.region
         });
 
-        const info = await context.cfn.lookup.info(`${context.repo}-${context.name}`, context.region, true, false);
+        const info = await context.cfn.lookup.info(`${context.repo}-${context.name}`);
         await this.resolveSecrets(secretsManager, info);
 
         const showParameters = Boolean(argv.parameter || argv.parameters);
@@ -80,7 +80,7 @@ export default class Info {
         console.log();
     }
 
-    private static async resolveSecrets(secretsManager: SecretsManagerClient, info: CloudFormationLookupInfo): Promise<void> {
+    private static async resolveSecrets(secretsManager: SecretsManagerClient, info: InfoOutput): Promise<void> {
         for (const key of info.Outputs.keys()) {
             const outputValue = info.Outputs.get(key);
             if (!outputValue || !/{{resolve:secretsmanager:.*}}/.test(outputValue)) {

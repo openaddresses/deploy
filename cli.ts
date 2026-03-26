@@ -110,7 +110,7 @@ async function main(): Promise<void> {
                 let existingTemplate = null;
 
                 if (command === 'update') {
-                    existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.name}`, context.region, true, false);
+                    existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.name}`);
                 }
 
                 context.cfn.commands.config.tags = await Tags.request(context, existingTemplate);

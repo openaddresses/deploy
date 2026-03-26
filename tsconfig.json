@@ -11,10 +11,6 @@
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
-        "baseUrl": ".",
-        "paths": {
-            "@openaddresses/cfn-config": ["types/cfn-config.d.ts"]
-        },
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "noEmitOnError": true,
@@ -23,8 +19,7 @@
     "include": [
         "cli.ts",
         "lib/**/*.ts",
-        "test/**/*.ts",
-        "types/**/*.d.ts"
+        "test/**/*.ts"
     ],
     "exclude": ["dist", "docs", "node_modules"]
 }

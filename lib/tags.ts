@@ -1,9 +1,9 @@
 import inquirer from 'inquirer';
-import type { CloudFormationLookupInfo } from '@openaddresses/cfn-config';
+import type { InfoOutput } from '@openaddresses/cfn-config';
 import type { DeployContext, DeployTag } from './types.js';
 
 export default class Tags extends Array<DeployTag> {
-    static async request(context: DeployContext, existingTemplate: CloudFormationLookupInfo | null): Promise<Tags> {
+    static async request(context: DeployContext, existingTemplate: InfoOutput | null): Promise<Tags> {
         const tags = new Tags();
         const known: Record<string, string> = {};
 

@@ -5,7 +5,7 @@ import CFN from '@openaddresses/cfn-config';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { fromIni } from '@aws-sdk/credential-providers';
 import Git from './git.js';
-import type { AwsCredentials, DeployArgv, ConfigTag, DeployProfile, DotDeployConfig, GitHubPollingConfig } from './types.js';
+import type { AwsCredentials, DeployArgv, ConfigTag, DeployProfile, DotDeployConfig, GitHubPollingConfig, DeployTag } from './types.js';
 
 const AjvConstructor = ((AjvModule as unknown as { default?: unknown }).default ?? AjvModule) as new (options?: object) => {
     compile: (schema: object) => {
@@ -142,7 +142,7 @@ export default class Credentials {
             region: creds.region,
             credentials: creds.aws
         }, {
-            tags: creds.tags,
+            tags: creds.tags.filter((t): t is DeployTag => typeof t !== 'string'),
             name: creds.repo,
             configBucket: `cfn-config-active-${accountId}-${creds.region}`,
             templateBucket: `cfn-config-templates-${accountId}-${creds.region}`
