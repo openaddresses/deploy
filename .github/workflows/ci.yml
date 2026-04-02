@@ -21,8 +21,14 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Docker Build Deploy
-              run: docker build -t deploy .
+            - name: Install Dependencies
+              run: npm install
 
-            - name: Docker Deploy Lint
-              run: docker run deploy
+            - name: Lint
+              run: npm run lint
+
+            - name: Build
+              run: npm run build
+
+            - name: Test
+              run: npm test
