@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.0.1
+
+- :bug: Add build step to CI to ensure Typescript is compiled before release
+
 ### v10.0.0
 
 - :tada: Migrate Codebase to Typescript
