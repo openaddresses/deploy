@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.0.0
+
+- :tada: Migrate Codebase to Typescript
+
 ### v9.10.2
 
 - :rocket: Update NPM Release Process
