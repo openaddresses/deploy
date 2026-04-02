@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "dist",
+        "rootDir": ".",
+        "declaration": true,
+        "sourceMap": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "noEmitOnError": true,
+        "types": ["node", "vitest/globals"]
+    },
+    "include": [
+        "cli.ts",
+        "lib/**/*.ts",
+        "test/**/*.ts"
+    ],
+    "exclude": ["dist", "docs", "node_modules"]
+}

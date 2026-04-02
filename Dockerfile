@@ -1,11 +1,9 @@
-FROM node:16-alpine3.14
+FROM node:24-alpine
 
 ENV HOME=/home/oa-deploy
 WORKDIR $HOME
 COPY ./ $HOME
 
-RUN npm install -g npm@8 \
-    && npm update \
-    && npm install
+RUN npm install
 
 CMD npm run lint

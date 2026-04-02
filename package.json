@@ -2,16 +2,21 @@
     "name": "@openaddresses/deploy",
     "type": "module",
     "version": "9.10.2",
-    "main": "index.js",
+    "main": "dist/cli.js",
+    "types": "dist/cli.d.ts",
     "author": "ingalls <nick@ingalls.ca>",
     "license": "MIT",
     "scripts": {
-        "lint": "eslint cli.js lib/",
+        "build": "tsc -p tsconfig.json && cp -r data dist/ && cp package.json dist/",
+        "postbuild": "chmod +x dist/cli.js",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "lint": "eslint cli.ts lib/ test/",
         "test": "vitest run",
-        "doc": "documentation build cli.js -f html -o docs"
+        "doc": "typedoc --entryPoints cli.ts --out docs",
+        "prepack": "npm run build"
     },
     "bin": {
-        "deploy": "cli.js"
+        "deploy": "dist/cli.js"
     },
     "engines": {
         "node": "> 21"
@@ -29,19 +34,24 @@
         "@aws-sdk/client-secrets-manager": "^3.272.0",
         "@aws-sdk/client-sts": "^3.730.0",
         "@aws-sdk/credential-providers": "^3.272.0",
-        "@openaddresses/cfn-config": "^7.5.0",
-        "ora": "^9.0.0",
+        "@openaddresses/cfn-config": "^8.0.0",
         "ajv": "^8.6.3",
         "cli-table": "^0.3.1",
         "handlebars": "^4.7.7",
         "inquirer": "^13.0.0",
-        "minimist": "^1.2.5",
+        "ora": "^9.0.0",
         "prompt": "^1.0.0"
     },
     "devDependencies": {
-        "documentation": "^14.0.0",
+        "@eslint/js": "^10.0.0",
+        "@types/cli-table": "^0.3.4",
+        "@types/node": "^25.0.0",
+        "@types/prompt": "^1.1.8",
         "eslint": "^10.0.0",
         "eslint-plugin-n": "^17.10.3",
-        "vitest": "^3.0.0"
+        "typedoc": "^0.28.0",
+        "typescript": "^6.0.2",
+        "typescript-eslint": "^8.46.1",
+        "vitest": "^4.0.0"
     }
 }
