@@ -35,10 +35,10 @@ export default class Exec {
                 cluster: { type: 'string' },
                 task: { type: 'string' },
                 command: { type: 'string' },
-                container: { type: 'string' },
+                container: { type: 'string' }
             },
             allowPositionals: true,
-            strict: false,
+            strict: false
         });
         const argv = { ...values, _: [] } as DeployArgv;
 

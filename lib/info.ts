@@ -29,10 +29,10 @@ export default class Info {
                 outputs: { type: 'boolean' },
                 parameter: { type: 'boolean' },
                 parameters: { type: 'boolean' },
-                help: { type: 'boolean' },
+                help: { type: 'boolean' }
             },
             allowPositionals: true,
-            strict: false,
+            strict: false
         });
         const argv = { ...values, _: [] } as DeployArgv;
 

@@ -23,10 +23,10 @@ export default class List {
             args: argvInput,
             options: {
                 all: { type: 'boolean' },
-                region: { type: 'string' },
+                region: { type: 'string' }
             },
             allowPositionals: true,
-            strict: false,
+            strict: false
         });
         const argv = { ...values, _: [] } as DeployArgv;
 
