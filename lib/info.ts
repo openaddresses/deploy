@@ -1,5 +1,5 @@
 import Table from 'cli-table';
-import minimist from 'minimist';
+import { parseArgs } from 'node:util';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import type { InfoOutput } from '@openaddresses/cfn-config';
 import type { DeployArgv, DeployContext } from './types.js';
@@ -22,13 +22,19 @@ export default class Info {
     }
 
     static async main(context: DeployContext, argvInput: string[]): Promise<void> {
-        const argv = minimist(argvInput, {
-            boolean: ['output', 'outputs', 'parameters', 'parameter', 'help'],
-            alias: {
-                output: 'outputs',
-                parameters: 'parameter'
-            }
-        }) as DeployArgv;
+        const { values } = parseArgs({
+            args: argvInput,
+            options: {
+                output: { type: 'boolean' },
+                outputs: { type: 'boolean' },
+                parameter: { type: 'boolean' },
+                parameters: { type: 'boolean' },
+                help: { type: 'boolean' },
+            },
+            allowPositionals: true,
+            strict: false,
+        });
+        const argv = { ...values, _: [] } as DeployArgv;
 
         if (!context.stack) {
             console.error('Stack name required: run deploy info --help');

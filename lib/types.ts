@@ -1,5 +1,4 @@
 import type CFN from '@openaddresses/cfn-config';
-import type { ParsedArgs } from 'minimist';
 
 export interface AwsCredentials {
     accessKeyId: string;
@@ -63,7 +62,7 @@ export interface DeployContext {
     accountId(): Promise<string>;
 }
 
-export interface DeployArgv extends ParsedArgs {
+export interface DeployArgv {
     _: string[];
     help?: boolean;
     version?: boolean;

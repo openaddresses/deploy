@@ -1,4 +1,4 @@
-import minimist from 'minimist';
+import { parseArgs } from 'node:util';
 import { ListStacksCommand, CloudFormationClient } from '@aws-sdk/client-cloudformation';
 import { DescribeRegionsCommand, EC2Client } from '@aws-sdk/client-ec2';
 import type { DeployArgv, DeployContext } from './types.js';
@@ -19,10 +19,16 @@ export default class List {
     }
 
     static async main(context: DeployContext, argvInput: string[]): Promise<void> {
-        const argv = minimist(argvInput, {
-            boolean: ['all'],
-            string: ['region']
-        }) as DeployArgv;
+        const { values } = parseArgs({
+            args: argvInput,
+            options: {
+                all: { type: 'boolean' },
+                region: { type: 'string' },
+            },
+            allowPositionals: true,
+            strict: false,
+        });
+        const argv = { ...values, _: [] } as DeployArgv;
 
         if (argv.all && argv.region) {
             throw new Error('--all & --region cannot be used together');

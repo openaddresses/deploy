@@ -60,7 +60,7 @@ export default class Credentials {
             throw new Error('Could not determine git sha');
         }
 
-        creds.stack = String(argv._[3] ?? '').replace(new RegExp(`^${creds.repo}-`), '');
+        creds.stack = String(argv._[1] ?? '').replace(new RegExp(`^${creds.repo}-`), '');
         creds.force = argv.force ?? false;
         creds.dotdeploy = Credentials.dot_deploy() || {};
 

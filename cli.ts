@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import inquirer from 'inquirer';
-import minimist from 'minimist';
+import { parseArgs } from 'node:util';
 import artifacts from './lib/artifacts.js';
 import mode from './lib/commands.js';
 import Context from './lib/context.js';
@@ -13,13 +13,22 @@ import Help from './lib/help.js';
 import Tags from './lib/tags.js';
 import type { DeployArgv } from './lib/types.js';
 
-const argv = minimist(process.argv, {
-    boolean: ['help', 'version', 'debug', 'force'],
-    string: ['profile', 'region', 'template', 'name'],
-    alias: {
-        version: 'v'
-    }
-}) as DeployArgv;
+const { values, positionals } = parseArgs({
+    args: process.argv.slice(2),
+    options: {
+        help: { type: 'boolean' },
+        version: { type: 'boolean', short: 'v' },
+        debug: { type: 'boolean' },
+        force: { type: 'boolean' },
+        profile: { type: 'string' },
+        region: { type: 'string' },
+        template: { type: 'string' },
+        name: { type: 'string' }
+    },
+    allowPositionals: true,
+    strict: false
+});
+const argv = { ...values, _: positionals } as DeployArgv;
 
 if (argv.version) {
     const packageJson = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
@@ -27,11 +36,11 @@ if (argv.version) {
     process.exit(0);
 }
 
-if (!argv._[2] || argv._[2] === 'help' || (!argv._[2] && argv.help)) {
+if (!argv._[0] || argv._[0] === 'help' || (!argv._[0] && argv.help)) {
     Help.main();
 }
 
-const command = String(argv._[2]);
+const command = String(argv._[0]);
 
 if (mode[command] && argv.help) {
     mode[command].help();
@@ -55,7 +64,7 @@ async function main(): Promise<void> {
     if (['create', 'update', 'delete', 'cancel'].includes(command)) {
         const context = await Context.generate(argv);
 
-        if (!argv._[3] && !argv.name) {
+        if (!argv._[1] && !argv.name) {
             console.error(`Stack name required: run deploy ${command} --help`);
             process.exit(1);
         }
@@ -103,7 +112,7 @@ async function main(): Promise<void> {
             }
 
             if (context.github) {
-                await gh.deployment(String(argv._[3] ?? context.name));
+                await gh.deployment(String(argv._[1] ?? context.name));
             }
 
             if (context.tags.length > 0) {
@@ -136,7 +145,7 @@ async function main(): Promise<void> {
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {
-                    await gh.deployment(String(argv._[3] ?? context.name), true);
+                    await gh.deployment(String(argv._[1] ?? context.name), true);
                 }
             });
         } else if (command === 'update') {
@@ -145,7 +154,7 @@ async function main(): Promise<void> {
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {
-                    await gh.deployment(String(argv._[3] ?? context.name), true);
+                    await gh.deployment(String(argv._[1] ?? context.name), true);
                 }
             }, async (error) => {
                 if (!context.github) {
@@ -154,9 +163,9 @@ async function main(): Promise<void> {
 
                 const err = error as { execution?: string; status?: string };
                 if (err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
-                    await gh.deployment(String(argv._[3] ?? context.name), true);
+                    await gh.deployment(String(argv._[1] ?? context.name), true);
                 } else {
-                    await gh.deployment(String(argv._[3] ?? context.name), false);
+                    await gh.deployment(String(argv._[1] ?? context.name), false);
                 }
             });
         } else if (command === 'delete') {
@@ -170,22 +179,22 @@ async function main(): Promise<void> {
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {
-                    await gh.deployment(String(argv._[3] ?? context.name), false);
+                    await gh.deployment(String(argv._[1] ?? context.name), false);
                 }
             });
         }
     } else if (mode[command]) {
         if (command === 'init') {
-            await mode[command].main?.(process.argv);
+            await mode[command].main?.(process.argv.slice(2));
         } else if (command === 'env') {
             argv.template = false;
             const context = await Context.generate(argv);
-            await mode[command].main?.(context, process.argv);
+            await mode[command].main?.(context, process.argv.slice(2));
         } else {
             const context = await Context.generate(argv);
 
             try {
-                await mode[command].main?.(context, process.argv);
+                await mode[command].main?.(context, process.argv.slice(2));
             } catch (error) {
                 const err = asError(error);
                 console.error(`Command failed: ${err.message}`);

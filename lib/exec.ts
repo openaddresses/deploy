@@ -1,5 +1,5 @@
 import inquirer from 'inquirer';
-import minimist from 'minimist';
+import { parseArgs } from 'node:util';
 import {
     DescribeServicesCommand,
     DescribeTasksCommand,
@@ -28,9 +28,19 @@ export default class Exec {
     }
 
     static async main(context: DeployContext, argvInput: string[]): Promise<void> {
-        const argv = minimist(argvInput, {
-            string: ['region', 'cluster', 'task', 'command', 'container']
-        }) as DeployArgv;
+        const { values } = parseArgs({
+            args: argvInput,
+            options: {
+                region: { type: 'string' },
+                cluster: { type: 'string' },
+                task: { type: 'string' },
+                command: { type: 'string' },
+                container: { type: 'string' },
+            },
+            allowPositionals: true,
+            strict: false,
+        });
+        const argv = { ...values, _: [] } as DeployArgv;
 
         if (!argv.region) {
             argv.region = context.region;
