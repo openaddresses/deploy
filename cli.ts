@@ -20,6 +20,7 @@ const { values, positionals } = parseArgs({
         version: { type: 'boolean', short: 'v' },
         debug: { type: 'boolean' },
         force: { type: 'boolean' },
+        drift: { type: 'boolean' },
         profile: { type: 'string' },
         region: { type: 'string' },
         template: { type: 'string' },
@@ -150,7 +151,7 @@ async function main(): Promise<void> {
             });
         } else if (command === 'update') {
             await runDeploymentCommand('Update failed', async () => {
-                await context.cfn.commands.update(context.name, cloudFormationPath, { parameters });
+                await context.cfn.commands.update(context.name, cloudFormationPath, { parameters, driftAware: argv.drift });
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {

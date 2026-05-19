@@ -1,6 +1,7 @@
 import cancel from './cancel.js';
 import create from './create.js';
 import del from './delete.js';
+import drift from './drift.js';
 import env from './env.js';
 import exec from './exec.js';
 import info from './info.js';
@@ -20,7 +21,8 @@ const commands: Record<string, CommandModule> = {
     info,
     json,
     cancel,
-    exec
+    exec,
+    drift
 };
 
 export default commands;

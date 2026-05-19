@@ -8,6 +8,7 @@ export default class Update {
         console.log('Usage: deploy update <stack> [--help]');
         console.log();
         console.log('Options:');
+        console.log('  --drift              Create a Drift Aware Changeset');
         console.log('  --help               show this help message');
         console.log('  --region  <region>   Override default region to perform operations in');
         console.log();

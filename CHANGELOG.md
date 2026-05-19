@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v10.1.0
+
+- :tada: Add `drift` subcommand for checking for drift between the deployed stack and actual resources
+- :rocket: Add `update --drift` flag to update a stack with drifted resources to update the stack to match the actual resources
+
 ### v10.0.1
 
 - :bug: Add build step to CI to ensure Typescript is compiled before release

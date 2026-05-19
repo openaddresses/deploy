@@ -68,6 +68,7 @@ export interface DeployArgv {
     version?: boolean;
     debug?: boolean;
     force?: boolean;
+    drift?: boolean;
     profile?: string;
     region?: string;
     template?: string | false;
