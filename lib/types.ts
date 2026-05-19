@@ -82,11 +82,13 @@ export interface DeployArgv {
     outputs?: boolean;
     parameter?: boolean;
     parameters?: boolean;
+    account?: string;
+    role?: string;
 }
 
 export interface CommandModule {
     short: string;
     help(): void;
-    main?: (..._args: any[]) => Promise<void> | void;
+    main?(..._args: unknown[]): Promise<void> | void;
     bucket?: (_context: DeployContext) => Promise<void>;
 }

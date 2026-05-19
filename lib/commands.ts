@@ -7,6 +7,7 @@ import info from './info.js';
 import init from './init.js';
 import json from './json.js';
 import list from './list.js';
+import sso from './sso.js';
 import update from './update.js';
 import type { CommandModule } from './types.js';
 
@@ -20,7 +21,8 @@ const commands: Record<string, CommandModule> = {
     info,
     json,
     cancel,
-    exec
+    exec,
+    sso
 };
 
 export default commands;

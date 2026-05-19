@@ -184,7 +184,7 @@ async function main(): Promise<void> {
             });
         }
     } else if (mode[command]) {
-        if (command === 'init') {
+        if (['init', 'sso'].includes(command)) {
             await mode[command].main?.(process.argv.slice(2));
         } else if (command === 'env') {
             argv.template = false;
