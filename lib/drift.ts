@@ -7,7 +7,7 @@ import {
     DescribeStackDriftDetectionStatusCommand,
     DescribeStackResourceDriftsCommand
 } from '@aws-sdk/client-cloudformation';
-import type { DeployArgv, DeployContext } from './types.js';
+import type { DeployContext } from './types.js';
 
 export default class Drift {
     static short = 'Print a CloudFormation Drift table for a stack';

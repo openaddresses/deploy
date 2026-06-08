@@ -60,7 +60,7 @@ export default class Exec {
             }
 
             const answer = await inquirer.prompt<{ cluster: string }>({
-                type: 'list',
+                type: 'select',
                 name: 'cluster',
                 message: 'ECS Cluster',
                 choices
@@ -79,7 +79,7 @@ export default class Exec {
             }
 
             const serviceAnswer = await inquirer.prompt<{ service: string }>({
-                type: 'list',
+                type: 'select',
                 name: 'service',
                 message: 'ECS Service',
                 choices: serviceChoices
@@ -107,7 +107,7 @@ export default class Exec {
             }
 
             const taskAnswer = await inquirer.prompt<{ task: string }>({
-                type: 'list',
+                type: 'select',
                 name: 'task',
                 message: 'ECS Task',
                 choices: taskChoices
@@ -127,7 +127,7 @@ export default class Exec {
             }
 
             const containerAnswer = await inquirer.prompt<{ container: string }>({
-                type: 'list',
+                type: 'select',
                 name: 'container',
                 message: 'ECS Container',
                 choices: containerChoices

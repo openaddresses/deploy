@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.2.1
+
+- :rocket: Migrate internal `list` => `select` for inquirer@14
+
 ### v10.2.0
 
 - :rocket: Support retaining NoEcho values
