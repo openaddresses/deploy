@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.2.0
+
+- :rocket: Support retaining NoEcho values
+
 ### v10.1.0
 
 - :tada: Add `drift` subcommand for checking for drift between the deployed stack and actual resources

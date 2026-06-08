@@ -38,7 +38,7 @@
         "ajv": "^8.6.3",
         "cli-table": "^0.3.1",
         "handlebars": "^4.7.7",
-        "inquirer": "^13.0.0",
+        "inquirer": "^14.0.0",
         "ora": "^9.0.0",
         "prompt": "^1.0.0"
     },
