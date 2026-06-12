@@ -31,6 +31,10 @@ const { values, positionals } = parseArgs({
 });
 const argv = { ...values, _: positionals } as DeployArgv;
 
+process.on('SIGINT', () => {
+    process.exit(130);
+});
+
 if (argv.version) {
     const packageJson = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
     console.log(`openaddresses-deploy@${packageJson.version}`);

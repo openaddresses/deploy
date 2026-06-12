@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.3.0
+
+- :bug: Ensure CTRL+C works when in a loading state
+
 ### v10.2.1
 
 - :rocket: Migrate internal `list` => `select` for inquirer@14
