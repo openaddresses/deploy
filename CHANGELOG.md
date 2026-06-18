@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.3.1
+
+- :bug: Ensure that if GH has no checks, the deployment can still proceed
+
 ### v10.3.0
 
 - :bug: Ensure CTRL+C works when in a loading state
