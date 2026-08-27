@@ -45,7 +45,7 @@
     "devDependencies": {
         "@eslint/js": "^10.0.0",
         "@types/cli-table": "^0.3.4",
-        "@types/node": "^25.0.0",
+        "@types/node": "^26.0.0",
         "@types/prompt": "^1.1.8",
         "eslint": "^10.0.0",
         "eslint-plugin-n": "^18.0.0",

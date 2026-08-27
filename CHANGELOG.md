@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.4.0 - 2026-08-27
+
+- :arrow_up: Update Core Dependencies
+
 ### v10.3.1
 
 - :bug: Ensure that if GH has no checks, the deployment can still proceed
