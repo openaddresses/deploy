@@ -14,6 +14,10 @@
             "type": "string",
             "description": "Set a region as default"
         },
+        "role": {
+            "type": "string",
+            "description": "IAM Service Role ARN CloudFormation assumes for create/update/delete - supports {{accountId}}, {{partition}}, {{region}}, {{stack}}, {{project}}"
+        },
         "artifacts": {
             "type": "object",
             "additionalProperties": false,

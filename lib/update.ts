@@ -11,6 +11,7 @@ export default class Update {
         console.log('  --drift              Create a Drift Aware Changeset');
         console.log('  --help               show this help message');
         console.log('  --region  <region>   Override default region to perform operations in');
+        console.log('  --role    <arn>      IAM Service Role CloudFormation assumes to perform the operation');
         console.log();
     }
 }

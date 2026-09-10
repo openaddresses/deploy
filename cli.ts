@@ -23,6 +23,7 @@ const { values, positionals } = parseArgs({
         drift: { type: 'boolean' },
         profile: { type: 'string' },
         region: { type: 'string' },
+        role: { type: 'string' },
         template: { type: 'string' },
         name: { type: 'string' }
     },

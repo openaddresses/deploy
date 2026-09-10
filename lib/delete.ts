@@ -10,6 +10,7 @@ export default class Delete {
         console.log('Options:');
         console.log('  --help               show this help message');
         console.log('  --region  <region>   Override default region to perform operations in');
+        console.log('  --role    <arn>      IAM Service Role CloudFormation assumes to perform the operation');
         console.log();
     }
 }

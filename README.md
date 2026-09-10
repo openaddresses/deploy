@@ -60,6 +60,28 @@ tags are attached to all stacks deployed to that profile
 | ----------------- | ----- |
 | `tags`            | Cloudformation Tags to apply to stack |
 | `github`          | Github API token for updating deployment status |
+| `role`            | IAM Service Role ARN CloudFormation assumes for create/update/delete |
+
+### Service Role
+
+By default CloudFormation performs stack operations using the credentials of the
+caller. Setting `role` passes a Service Role that CloudFormation assumes instead,
+allowing users without IAM permissions to deploy stacks that manage IAM resources.
+The caller must be allowed `iam:PassRole` on the given role.
+
+The value is a Handlebars template with the following variables available:
+`{{accountId}}`, `{{partition}}`, `{{region}}`, `{{stack}}`, `{{project}}`
+
+Precedence is `--role <arn>` flag, then `.deploy` file, then `~/.deployrc.json` profile.
+
+```JSON
+{
+    "<profile_name>": {
+        "region": "<region>",
+        "role": "arn:{{partition}}:iam::{{accountId}}:role/cloudformation"
+    }
+}
+```
 
 ### Tags
 
@@ -99,6 +121,17 @@ The `./deploy` file is created in the root directory of the git repo and follows
 ```JSON
 {
     "profile": "name of AWS Account profile",
+}
+```
+
+## Service Role
+
+A project can pin the CloudFormation Service Role used for all of its stacks. The format
+and available template variables are identical to the `role` key in `~/.deployrc.json`.
+
+```JSON
+{
+    "role": "arn:{{partition}}:iam::{{accountId}}:role/my-vpc-{{stack}}-cloudformation"
 }
 ```
 

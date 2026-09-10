@@ -10,6 +10,11 @@
 
 ## Version History
 
+### v10.5.0 - 2026-09-10
+
+- :tada: Add `--role` flag and `role` config key to pass a CloudFormation Service Role on create, update, and delete
+- :arrow_up: `@openaddresses/cfn-config@8.3.0`
+
 ### v10.4.0 - 2026-08-27
 
 - :arrow_up: Update Core Dependencies

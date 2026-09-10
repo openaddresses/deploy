@@ -17,6 +17,7 @@ export type ConfigTag = string | DeployTag;
 export interface DeployProfile {
     region?: string;
     github?: string;
+    role?: string;
     tags?: ConfigTag[];
 }
 
@@ -29,6 +30,7 @@ export interface DotDeployConfig {
     profile?: string;
     name?: string;
     region?: string;
+    role?: string;
     artifacts?: DotDeployArtifacts;
     tags?: ConfigTag[];
 }
@@ -53,6 +55,7 @@ export interface DeployContext {
     profiles: Record<string, DeployProfile>;
     tags: ConfigTag[];
     region: string;
+    role: string;
     github: string | false;
     githubPolling: GitHubPollingConfig;
     force: boolean;
@@ -71,6 +74,7 @@ export interface DeployArgv {
     drift?: boolean;
     profile?: string;
     region?: string;
+    role?: string;
     template?: string | false;
     name?: string;
     all?: boolean;
