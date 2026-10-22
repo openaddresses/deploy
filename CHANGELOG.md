@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v10.5.1 - 2026-10-21
+
+- :arrow_up: Update Core Deps
+
 ### v10.5.0 - 2026-09-10
 
 - :tada: Add `--role` flag and `role` config key to pass a CloudFormation Service Role on create, update, and delete
