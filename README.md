@@ -37,6 +37,8 @@ deploy sso <profile-or-account-id>
 
 If the account has multiple SSO roles configured, you can further narrow it with `--role <role-name>`.
 
+If you run any other `deploy` command against an SSO profile whose session has expired, `deploy` runs `aws sso login` for you and then continues.
+
 Note the `profile name` prompted for should ideally match the profile name as set in your AWS credentials
 file located at `~/.aws/credentials` If the profile name is found in your AWS credentials file, the
 credentials from the file will be linked. If it does not exist, you will be prompted for a set of credentials

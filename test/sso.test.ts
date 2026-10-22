@@ -61,9 +61,42 @@ describe('SSO', () => {
                 ssoRoleName: 'ReadOnly'
             });
             expect(profiles.default).toMatchObject({
-                name: 'default'
+                name: 'default',
+                region: 'us-east-1'
             });
+            expect(profiles['static-creds'].region).toBe('us-west-2');
             expect(profiles).not.toHaveProperty('company');
+        });
+    });
+
+    describe('parseSsoSessions', () => {
+        it('extracts sso-session sections', () => {
+            const sessions = SSO.parseSsoSessions(awsConfigFixture());
+
+            expect(sessions).toEqual({
+                company: {
+                    name: 'company',
+                    ssoStartUrl: 'https://example.awsapps.com/start'
+                }
+            });
+        });
+    });
+
+    describe('missingSession', () => {
+        it('returns undefined when the referenced sso-session exists', () => {
+            expect(SSO.missingSession('staging-admin', awsConfigFixture())).toBeUndefined();
+        });
+
+        it('returns undefined for profiles that use sso_start_url directly', () => {
+            expect(SSO.missingSession('staging-readonly', awsConfigFixture())).toBeUndefined();
+        });
+
+        it('describes a profile whose sso-session section is missing', () => {
+            const raw = awsConfigFixture().replace('[sso-session company]', '[sso-session other]');
+
+            expect(SSO.missingSession('staging-admin', raw)).toBe(
+                'AWS profile staging-admin references sso_session company but no [sso-session company] section exists in ~/.aws/config'
+            );
         });
     });
 

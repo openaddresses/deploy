@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fromIni } from '@aws-sdk/credential-providers';
 import Credentials from '../lib/context.js';
 import Git from '../lib/git.js';
+import SSO from '../lib/sso.js';
 import type { DeployArgv } from '../lib/types.js';
 
 vi.mock('../lib/git.js', () => ({
@@ -49,11 +51,15 @@ function makeArgv(overrides: Partial<DeployArgv> = {}): DeployArgv {
     } as DeployArgv;
 }
 
-function mockRcFile(content: Record<string, unknown>): void {
+function mockRcFile(content: Record<string, unknown>, awsConfig = ''): void {
     const original = fs.readFileSync.bind(fs);
     vi.spyOn(fs, 'readFileSync').mockImplementation(((filePath: fs.PathOrFileDescriptor, options?: BufferEncoding | { encoding?: BufferEncoding | null; flag?: string } | null) => {
         if (String(filePath).endsWith('.deployrc.json')) {
             return JSON.stringify(content);
+        }
+
+        if (String(filePath).endsWith('.aws/config')) {
+            return awsConfig;
         }
 
         return original(filePath, options as never);
@@ -115,6 +121,70 @@ describe('Credentials.generate', () => {
             expect(creds.region).toBe('ap-southeast-1');
         });
 
+        it('an explicit --profile differing from the dotdeploy profile uses the profile region from ~/.deployrc.json', async () => {
+            mockRcFile({ coegc: { region: 'us-gov-east-1' }, staging: { region: 'us-east-2' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                profile: 'coegc',
+                region: 'us-gov-east-1'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'staging' }));
+
+            expect(creds.region).toBe('us-east-2');
+        });
+
+        it('an explicit --profile differing from the dotdeploy profile falls back to the region in ~/.aws/config', async () => {
+            mockRcFile({ coegc: { region: 'us-gov-east-1' } }, [
+                '[profile staging]',
+                'sso_session = company',
+                'region = us-west-1'
+            ].join('\n'));
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                profile: 'coegc',
+                region: 'us-gov-east-1'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'staging' }));
+
+            expect(creds.region).toBe('us-west-1');
+        });
+
+        it('an explicit --profile with no region configured keeps the dotdeploy region', async () => {
+            mockRcFile({ coegc: { region: 'us-gov-east-1' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                profile: 'coegc',
+                region: 'us-gov-east-1'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'staging' }));
+
+            expect(creds.region).toBe('us-gov-east-1');
+        });
+
+        it('an explicit --profile matching the dotdeploy profile keeps the dotdeploy region', async () => {
+            mockRcFile({ coegc: { region: 'us-east-1' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                profile: 'coegc',
+                region: 'us-gov-east-1'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'coegc' }));
+
+            expect(creds.region).toBe('us-gov-east-1');
+        });
+
+        it('--region overrides the region of an explicit --profile', async () => {
+            mockRcFile({ coegc: { region: 'us-gov-east-1' }, staging: { region: 'us-east-2' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                profile: 'coegc',
+                region: 'us-gov-east-1'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'staging', region: 'ca-central-1' }));
+
+            expect(creds.region).toBe('ca-central-1');
+        });
+
         it('--region overrides dotdeploy region', async () => {
             mockRcFile({ default: {} });
             vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
@@ -124,6 +194,87 @@ describe('Credentials.generate', () => {
             const creds = await Credentials.generate(makeArgv({ region: 'ca-central-1' }));
 
             expect(creds.region).toBe('ca-central-1');
+        });
+    });
+
+    describe('credential resolution', () => {
+        const ssoConfig = [
+            '[profile staging]',
+            'sso_session = company',
+            'sso_account_id = 123456789012',
+            'sso_role_name = AdministratorAccess',
+            '',
+            '[sso-session company]',
+            'sso_start_url = https://example.awsapps.com/start'
+        ].join('\n');
+
+        it('runs aws sso login and retries when an SSO profile has no valid credentials', async () => {
+            mockRcFile({ staging: {} }, ssoConfig);
+            vi.spyOn(Credentials, 'interactive').mockReturnValue(true);
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            const login = vi.spyOn(SSO, 'login').mockImplementation(() => undefined);
+            vi.mocked(fromIni)
+                .mockImplementationOnce(() => async () => {
+                    throw new Error('Token is expired');
+                })
+                .mockImplementationOnce(() => async () => ({
+                    accessKeyId: 'ASIAEXAMPLE',
+                    secretAccessKey: 'secret',
+                    sessionToken: 'token'
+                }));
+
+            const creds = await Credentials.generate(makeArgv({ profile: 'staging' }));
+
+            expect(login).toHaveBeenCalledWith('staging');
+            expect(creds.aws.accessKeyId).toBe('ASIAEXAMPLE');
+        });
+
+        it('does not attempt sso login when the SSO session is valid but access is denied', async () => {
+            mockRcFile({ staging: {} }, ssoConfig);
+            vi.spyOn(Credentials, 'interactive').mockReturnValue(true);
+            const login = vi.spyOn(SSO, 'login').mockImplementation(() => undefined);
+            vi.mocked(fromIni).mockImplementationOnce(() => async () => {
+                throw new Error('ForbiddenException: No access');
+            });
+
+            await expect(Credentials.generate(makeArgv({ profile: 'staging' }))).rejects.toThrow('ForbiddenException: No access');
+            expect(login).not.toHaveBeenCalled();
+        });
+
+        it('does not attempt sso login for a non-SSO profile', async () => {
+            mockRcFile({ default: {} }, '[default]\nregion = us-east-1');
+            vi.spyOn(Credentials, 'interactive').mockReturnValue(true);
+            const login = vi.spyOn(SSO, 'login').mockImplementation(() => undefined);
+            vi.mocked(fromIni).mockImplementationOnce(() => async () => {
+                throw new Error('no creds');
+            });
+
+            await expect(Credentials.generate(makeArgv())).rejects.toThrow('Credentials for profile default could not be resolved: no creds');
+            expect(login).not.toHaveBeenCalled();
+        });
+
+        it('does not attempt sso login without a TTY', async () => {
+            mockRcFile({ staging: {} }, ssoConfig);
+            vi.spyOn(Credentials, 'interactive').mockReturnValue(false);
+            const login = vi.spyOn(SSO, 'login').mockImplementation(() => undefined);
+            vi.mocked(fromIni).mockImplementationOnce(() => async () => {
+                throw new Error('Token is expired');
+            });
+
+            await expect(Credentials.generate(makeArgv({ profile: 'staging' }))).rejects.toThrow('Token is expired');
+            expect(login).not.toHaveBeenCalled();
+        });
+
+        it('reports a missing sso-session instead of attempting login', async () => {
+            mockRcFile({ staging: {} }, ssoConfig.replace('[sso-session company]', '[sso-session other]'));
+            vi.spyOn(Credentials, 'interactive').mockReturnValue(true);
+            const login = vi.spyOn(SSO, 'login').mockImplementation(() => undefined);
+            vi.mocked(fromIni).mockImplementationOnce(() => async () => {
+                throw new Error("Cannot read properties of undefined (reading 'sso_region')");
+            });
+
+            await expect(Credentials.generate(makeArgv({ profile: 'staging' }))).rejects.toThrow('references sso_session company but no [sso-session company] section');
+            expect(login).not.toHaveBeenCalled();
         });
     });
 

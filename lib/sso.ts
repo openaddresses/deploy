@@ -7,8 +7,9 @@ import { parseArgs } from 'node:util';
 import Git from './git.js';
 import type { DeployArgv } from './types.js';
 
-interface AwsConfigProfile {
+export interface AwsConfigProfile {
     name: string;
+    region?: string;
     ssoAccountId?: string;
     ssoRoleName?: string;
     ssoSession?: string;
@@ -25,6 +26,12 @@ interface ResolveProfileOptions {
 }
 
 type AwsConfigRecord = Record<string, AwsConfigProfile>;
+
+export interface AwsSsoSession {
+    name: string;
+    ssoStartUrl?: string;
+    ssoRegion?: string;
+}
 
 export default class SSO {
     static short = 'Log into an AWS SSO profile or account';
@@ -72,6 +79,68 @@ export default class SSO {
         console.error(`ok - use with: deploy <command> --profile ${profile}, or export AWS_PROFILE=${profile}`);
     }
 
+    static parseSsoSessions(raw: string): Record<string, AwsSsoSession> {
+        const sessions: Record<string, AwsSsoSession> = {};
+        let current: AwsSsoSession | undefined;
+
+        for (const line of raw.split(/\r?\n/)) {
+            const trimmed = line.trim();
+
+            if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) {
+                continue;
+            }
+
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                const section = trimmed.slice(1, -1).trim();
+                current = section.startsWith('sso-session ') ? { name: section.slice('sso-session '.length).trim() } : undefined;
+                if (current) {
+                    sessions[current.name] = current;
+                }
+
+                continue;
+            }
+
+            if (!current) {
+                continue;
+            }
+
+            const index = trimmed.search(/[=:]/);
+            if (index === -1) {
+                continue;
+            }
+
+            const key = trimmed.slice(0, index).trim();
+            const value = trimmed.slice(index + 1).trim();
+
+            if (key === 'sso_start_url') {
+                current.ssoStartUrl = value;
+            } else if (key === 'sso_region') {
+                current.ssoRegion = value;
+            }
+        }
+
+        return sessions;
+    }
+
+    static missingSession(profileName: string, raw?: string): string | undefined {
+        let config = raw;
+
+        if (config === undefined) {
+            try {
+                config = fs.readFileSync(path.resolve(os.homedir(), '.aws', 'config'), 'utf8');
+            } catch {
+                return undefined;
+            }
+        }
+
+        const profile = this.parseAwsConfig(config)[profileName];
+        if (!profile?.ssoSession || this.parseSsoSessions(config)[profile.ssoSession]) {
+            return undefined;
+        }
+
+        return `AWS profile ${profileName} references sso_session ${profile.ssoSession} but no [sso-session ${profile.ssoSession}] section exists in ~/.aws/config`;
+    }
+
     static parseAwsConfig(raw: string): AwsConfigRecord {
         const profiles: AwsConfigRecord = {};
         let current: AwsConfigProfile | undefined;
@@ -109,6 +178,9 @@ export default class SSO {
             const value = trimmed.slice(index + 1).trim();
 
             switch (key) {
+                case 'region':
+                    current.region = value;
+                    break;
                 case 'sso_account_id':
                     current.ssoAccountId = value;
                     break;
@@ -243,6 +315,11 @@ export default class SSO {
             throw new Error(`AWS profile ${name} is not configured for SSO`);
         }
 
+        const missing = this.missingSession(name);
+        if (missing) {
+            throw new Error(missing);
+        }
+
         return name;
     }
 
@@ -276,7 +353,22 @@ export default class SSO {
         return answer.profile;
     }
 
-    private static login(profile: string): void {
+    static isSsoProfileName(profileName: string, raw?: string): boolean {
+        let config = raw;
+
+        if (config === undefined) {
+            try {
+                config = fs.readFileSync(path.resolve(os.homedir(), '.aws', 'config'), 'utf8');
+            } catch {
+                return false;
+            }
+        }
+
+        const profile = this.parseAwsConfig(config)[profileName];
+        return profile ? this.isSsoProfile(profile) : false;
+    }
+
+    static login(profile: string): void {
         const child = cp.spawnSync('aws', ['sso', 'login', '--profile', profile], {
             stdio: 'inherit'
         });

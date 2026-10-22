@@ -6,6 +6,7 @@ import CFN from '@openaddresses/cfn-config';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { fromIni } from '@aws-sdk/credential-providers';
 import Git from './git.js';
+import SSO from './sso.js';
 import type { AwsCredentials, DeployArgv, ConfigTag, DeployProfile, DotDeployConfig, GitHubPollingConfig, DeployTag } from './types.js';
 
 const AjvConstructor = ((AjvModule as unknown as { default?: unknown }).default ?? AjvModule) as new (options?: object) => {
@@ -110,8 +111,14 @@ export default class Credentials {
             }
         });
 
+        const profileRegion = argv.profile && argv.profile !== creds.dotdeploy.profile
+            ? Credentials.profileRegion(creds)
+            : undefined;
+
         if (argv.region) {
             creds.region = argv.region;
+        } else if (profileRegion) {
+            creds.region = profileRegion;
         } else if (creds.dotdeploy.region) {
             creds.region = creds.dotdeploy.region;
         }
@@ -137,14 +144,7 @@ export default class Credentials {
             creds.tags = creds.tags.concat(creds.dotdeploy.tags);
         }
 
-        try {
-            creds.aws = await (await fromIni({
-                profile: creds.profile
-            })()) as Credentials['aws'];
-        } catch (error) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            throw new Error(`Credentials for profile ${creds.profile} could not be resolved: ${err.message} (run deploy init or deploy sso ${creds.profile})`, { cause: error });
-        }
+        creds.aws = await Credentials.resolveCredentials(creds.profile);
 
         const accountId = await creds.accountId();
 
@@ -205,6 +205,55 @@ export default class Credentials {
         }
 
         return false;
+    }
+
+    static async resolveCredentials(profile: string): Promise<AwsCredentials> {
+        const load = async (): Promise<AwsCredentials> => await (await fromIni({ profile })()) as AwsCredentials;
+        const fail = (error: unknown): never => {
+            const err = error instanceof Error ? error : new Error(String(error));
+            const reason = SSO.missingSession(profile) ?? err.message;
+            throw new Error(`Credentials for profile ${profile} could not be resolved: ${reason} (run deploy init or deploy sso ${profile})`, { cause: error });
+        };
+
+        try {
+            return await load();
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+
+            if (SSO.missingSession(profile) || !SSO.isSsoProfileName(profile) || !Credentials.interactive() || !Credentials.needsSsoLogin(err)) {
+                return fail(error);
+            }
+
+            console.error(`ok - [${profile}] ${err.message}`);
+            console.error(`ok - [${profile}] starting aws sso login`);
+
+            try {
+                SSO.login(profile);
+                return await load();
+            } catch (retryError) {
+                return fail(retryError);
+            }
+        }
+    }
+
+    static needsSsoLogin(error: Error): boolean {
+        return /token|sso session|sso login|login/i.test(error.message);
+    }
+
+    static interactive(): boolean {
+        return Boolean(process.stdin.isTTY);
+    }
+
+    static profileRegion(creds: Credentials): string | undefined {
+        if (creds.profiles[creds.profile]?.region) {
+            return creds.profiles[creds.profile].region;
+        }
+
+        try {
+            return SSO.readAwsConfig()[creds.profile]?.region;
+        } catch {
+            return undefined;
+        }
     }
 
     static partition(region: string): string {
