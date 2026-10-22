@@ -141,8 +141,9 @@ export default class Credentials {
             creds.aws = await (await fromIni({
                 profile: creds.profile
             })()) as Credentials['aws'];
-        } catch {
-            throw new Error('creds not set: run deploy init');
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            throw new Error(`Credentials for profile ${creds.profile} could not be resolved: ${err.message} (run deploy init or deploy sso ${creds.profile})`, { cause: error });
         }
 
         const accountId = await creds.accountId();

@@ -64,6 +64,7 @@ try {
     if (argv.debug) {
         throw err;
     }
+    process.exit(1);
 }
 
 async function main(): Promise<void> {

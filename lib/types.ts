@@ -88,7 +88,6 @@ export interface DeployArgv {
     parameter?: boolean;
     parameters?: boolean;
     account?: string;
-    role?: string;
 }
 
 export interface CommandModule {

@@ -10,6 +10,11 @@
 
 ## Version History
 
+### Unreleased
+
+- :tada: Add `deploy sso` to log into an AWS IAM Identity Center profile via `aws sso login` so long-term credentials need not be stored locally
+- :rocket: Surface the underlying AWS SDK error when profile credentials cannot be resolved
+
 ### v10.5.1 - 2026-10-21
 
 - :arrow_up: Update Core Deps

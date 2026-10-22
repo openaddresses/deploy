@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import inquirer from 'inquirer';
 import { parseArgs } from 'node:util';
+import Git from './git.js';
 import type { DeployArgv } from './types.js';
 
 interface AwsConfigProfile {
@@ -68,6 +69,7 @@ export default class SSO {
 
         this.login(profile);
         console.error(`ok - [${profile}] SSO session configured`);
+        console.error(`ok - use with: deploy <command> --profile ${profile}, or export AWS_PROFILE=${profile}`);
     }
 
     static parseAwsConfig(raw: string): AwsConfigRecord {
@@ -168,14 +170,29 @@ export default class SSO {
         return this.parseAwsConfig(raw);
     }
 
-    static readDotDeployProfile(dotDeployPath = path.resolve(process.cwd(), '.deploy')): string | undefined {
-        if (!fs.existsSync(dotDeployPath)) {
-            return undefined;
+    static readDotDeployProfile(dotDeployPath?: string): string | undefined {
+        const attempts = dotDeployPath ? [dotDeployPath] : [path.resolve(process.cwd(), '.deploy')];
+
+        if (!dotDeployPath) {
+            try {
+                attempts.push(path.resolve(Git.root(), '.deploy'));
+            } catch {
+                // not in a git repo
+            }
         }
 
-        const raw = fs.readFileSync(dotDeployPath, 'utf8');
-        const parsed = JSON.parse(raw) as { profile?: unknown };
-        return typeof parsed.profile === 'string' && parsed.profile ? parsed.profile : undefined;
+        for (const attempt of new Set(attempts)) {
+            if (!fs.existsSync(attempt)) {
+                continue;
+            }
+
+            const parsed = JSON.parse(fs.readFileSync(attempt, 'utf8')) as { profile?: unknown };
+            if (typeof parsed.profile === 'string' && parsed.profile) {
+                return parsed.profile;
+            }
+        }
+
+        return undefined;
     }
 
     static describeProfile(profile: AwsConfigProfile): string {
@@ -247,7 +264,7 @@ export default class SSO {
         }
 
         const answer = await inquirer.prompt<{ profile: string }>({
-            type: 'list',
+            type: 'select',
             name: 'profile',
             message: 'AWS SSO Profile',
             choices: candidates.map((profile) => ({
