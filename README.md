@@ -21,13 +21,21 @@ This will make the `deploy` command available globally
 
 Before you can make changes to any of the underlying infrastructure you must first authenticate the deploy cli
 
-To do so run:
+If you are using static AWS credentials, run:
 
 ```sh
 deploy init
 ```
 
 and follow the prompts for your credentials.
+
+If you are using AWS IAM Identity Center (AWS SSO), first create an AWS CLI SSO profile with `aws configure sso` and then log in with:
+
+```sh
+deploy sso <profile-or-account-id>
+```
+
+If the account has multiple SSO roles configured, you can further narrow it with `--role <role-name>`.
 
 Note the `profile name` prompted for should ideally match the profile name as set in your AWS credentials
 file located at `~/.aws/credentials` If the profile name is found in your AWS credentials file, the
@@ -42,6 +50,8 @@ deploy
 to see a full list of options
 
 Note: The credentials file can be found in the `~/.deployrc.json` file
+
+For SSO logins, the underlying AWS CLI configuration remains in `~/.aws/config` and `deploy sso` delegates the browser-based sign-in to `aws sso login`.
 
 # Global Config `~/.deployrc.json`
 
