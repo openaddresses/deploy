@@ -12,10 +12,17 @@
 
 ### Unreleased
 
+### v10.7.0 - 2026-10-21
+
+- :rocket: Add additional SSO session validation to ensure that the SSO session is valid and not expired before attempting to use it for profile resolution
+
 ### v10.6.0 - 2026-10-21
 
 - :tada: Add `deploy sso` to log into an AWS IAM Identity Center profile via `aws sso login` so long-term credentials need not be stored locally
 - :rocket: Surface the underlying AWS SDK error when profile credentials cannot be resolved
+- :tada: When a command's profile is an SSO profile without valid credentials, run `aws sso login` automatically and continue (interactive terminals only)
+- :rocket: Report a clear error when an SSO profile references an `sso-session` that is missing from `~/.aws/config`
+- :rocket: When `--profile` differs from the `.deploy` profile, use that profile's region from `~/.deployrc.json` or `~/.aws/config` ahead of the `.deploy` region (`--region` still wins)
 
 ### v10.5.1 - 2026-10-21
 
