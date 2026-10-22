@@ -10,6 +10,40 @@
 
 ## Version History
 
+### v10.5.1 - 2026-10-21
+
+- :arrow_up: Update Core Deps
+
+### v10.5.0 - 2026-09-10
+
+- :tada: Add `--role` flag and `role` config key to pass a CloudFormation Service Role on create, update, and delete
+- :arrow_up: `@openaddresses/cfn-config@8.3.0`
+
+### v10.4.0 - 2026-08-27
+
+- :arrow_up: Update Core Dependencies
+
+### v10.3.1
+
+- :bug: Ensure that if GH has no checks, the deployment can still proceed
+
+### v10.3.0
+
+- :bug: Ensure CTRL+C works when in a loading state
+
+### v10.2.1
+
+- :rocket: Migrate internal `list` => `select` for inquirer@14
+
+### v10.2.0
+
+- :rocket: Support retaining NoEcho values
+
+### v10.1.0
+
+- :tada: Add `drift` subcommand for checking for drift between the deployed stack and actual resources
+- :rocket: Add `update --drift` flag to update a stack with drifted resources to update the stack to match the actual resources
+
 ### v10.0.1
 
 - :bug: Add build step to CI to ensure Typescript is compiled before release

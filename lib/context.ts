@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import AjvModule from 'ajv';
+import Handlebars from 'handlebars';
 import CFN from '@openaddresses/cfn-config';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { fromIni } from '@aws-sdk/credential-providers';
@@ -18,7 +19,7 @@ const ajv = new AjvConstructor({
     allErrors: true
 });
 
-const PROFILE_KEYS = ['region', 'github'] as const;
+const PROFILE_KEYS = ['region', 'github', 'role'] as const;
 
 export default class Credentials {
     user = '';
@@ -35,6 +36,7 @@ export default class Credentials {
     profiles: Record<string, DeployProfile> = {};
     tags: ConfigTag[] = [];
     region = 'us-east-1';
+    role = '';
     github: string | false = false;
     githubPolling: GitHubPollingConfig = {
         timeout: 30 * 60 * 1000,
@@ -114,6 +116,12 @@ export default class Credentials {
             creds.region = creds.dotdeploy.region;
         }
 
+        if (argv.role) {
+            creds.role = argv.role;
+        } else if (creds.dotdeploy.role) {
+            creds.role = creds.dotdeploy.role;
+        }
+
         if (argv.name) {
             creds.name = argv.name.replace(new RegExp(`^${creds.repo}-`), '');
         } else {
@@ -138,11 +146,23 @@ export default class Credentials {
         }
 
         const accountId = await creds.accountId();
+
+        if (creds.role) {
+            creds.role = Handlebars.compile(creds.role)({
+                accountId,
+                partition: Credentials.partition(creds.region),
+                region: creds.region,
+                stack: creds.stack,
+                project: creds.repo
+            });
+        }
+
         creds.cfn = new CFN({
             region: creds.region,
             credentials: creds.aws
         }, {
             tags: creds.tags.filter((t): t is DeployTag => typeof t !== 'string'),
+            roleArn: creds.role || undefined,
             name: creds.repo,
             configBucket: `cfn-config-active-${accountId}-${creds.region}`,
             templateBucket: `cfn-config-templates-${accountId}-${creds.region}`
@@ -184,6 +204,12 @@ export default class Credentials {
         }
 
         return false;
+    }
+
+    static partition(region: string): string {
+        if (region.startsWith('us-gov-')) return 'aws-us-gov';
+        if (region.startsWith('cn-')) return 'aws-cn';
+        return 'aws';
     }
 
     async accountId(): Promise<string> {

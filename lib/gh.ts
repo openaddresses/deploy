@@ -106,6 +106,12 @@ export default class GH {
             while (Date.now() - startTime < timeout) {
                 const status = await this.status();
                 const checks = status.check_runs ?? [];
+
+                if (checks.length === 0) {
+                    progress.info(`No status checks associated with ${this.context.sha}`)
+                    return;
+                }
+                
                 const completed = checks.filter((check) => check.status === 'completed');
                 const failed = completed.filter((check) => {
                     const conclusion = check.conclusion ?? '';

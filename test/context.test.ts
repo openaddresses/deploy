@@ -30,8 +30,14 @@ vi.mock('@aws-sdk/client-sts', () => ({
     GetCallerIdentityCommand: class MockGetCallerIdentityCommand {}
 }));
 
+const cfnCalls = vi.hoisted(() => ({ options: undefined as Record<string, unknown> | undefined }));
+
 vi.mock('@openaddresses/cfn-config', () => ({
-    default: class MockCFN {}
+    default: class MockCFN {
+        constructor(_client: unknown, options: Record<string, unknown>) {
+            cfnCalls.options = options;
+        }
+    }
 }));
 
 function makeArgv(overrides: Partial<DeployArgv> = {}): DeployArgv {
@@ -168,6 +174,71 @@ describe('Credentials.generate', () => {
             const creds = await Credentials.generate(makeArgv({ profile: 'eu' }));
 
             expect(creds.region).toBe('eu-west-1');
+        });
+    });
+
+    describe('role precedence', () => {
+        it('passes no roleArn when nothing is configured', async () => {
+            mockRcFile({ default: {} });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue(false);
+
+            const creds = await Credentials.generate(makeArgv());
+
+            expect(creds.role).toBe('');
+            expect(cfnCalls.options?.roleArn).toBeUndefined();
+        });
+
+        it('uses the profile role from ~/.deployrc.json', async () => {
+            mockRcFile({ default: { role: 'arn:aws:iam::123456789012:role/profile-role' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue(false);
+
+            const creds = await Credentials.generate(makeArgv());
+
+            expect(creds.role).toBe('arn:aws:iam::123456789012:role/profile-role');
+            expect(cfnCalls.options?.roleArn).toBe('arn:aws:iam::123456789012:role/profile-role');
+        });
+
+        it('dotdeploy role takes precedence over profile role', async () => {
+            mockRcFile({ default: { role: 'arn:aws:iam::123456789012:role/profile-role' } });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                role: 'arn:aws:iam::123456789012:role/project-role'
+            });
+
+            const creds = await Credentials.generate(makeArgv());
+
+            expect(creds.role).toBe('arn:aws:iam::123456789012:role/project-role');
+        });
+
+        it('--role overrides dotdeploy role', async () => {
+            mockRcFile({ default: {} });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                role: 'arn:aws:iam::123456789012:role/project-role'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ role: 'arn:aws:iam::123456789012:role/flag-role' }));
+
+            expect(creds.role).toBe('arn:aws:iam::123456789012:role/flag-role');
+        });
+
+        it('renders template variables in the role', async () => {
+            mockRcFile({ default: {} });
+            vi.spyOn(Credentials, 'dot_deploy').mockReturnValue({
+                region: 'us-gov-east-1',
+                role: 'arn:{{partition}}:iam::{{accountId}}:role/{{project}}-{{stack}}-{{region}}'
+            });
+
+            const creds = await Credentials.generate(makeArgv({ _: ['update', 'staging'] }));
+
+            expect(creds.role).toBe('arn:aws-us-gov:iam::123456789012:role/testrepo-staging-us-gov-east-1');
+            expect(cfnCalls.options?.roleArn).toBe('arn:aws-us-gov:iam::123456789012:role/testrepo-staging-us-gov-east-1');
+        });
+    });
+
+    describe('partition', () => {
+        it('derives the partition from the region', () => {
+            expect(Credentials.partition('us-east-1')).toBe('aws');
+            expect(Credentials.partition('us-gov-east-1')).toBe('aws-us-gov');
+            expect(Credentials.partition('cn-north-1')).toBe('aws-cn');
         });
     });
 

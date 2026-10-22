@@ -14,6 +14,10 @@
                     "type" :"string",
                     "description": "Github Access Token for Deploy API"
                 },
+                "role": {
+                    "type": "string",
+                    "description": "IAM Service Role ARN CloudFormation assumes for create/update/delete - supports {{accountId}}, {{partition}}, {{region}}, {{stack}}, {{project}}"
+                },
                 "tags": {
                     "type": "array",
                     "items": {

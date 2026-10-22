@@ -20,8 +20,10 @@ const { values, positionals } = parseArgs({
         version: { type: 'boolean', short: 'v' },
         debug: { type: 'boolean' },
         force: { type: 'boolean' },
+        drift: { type: 'boolean' },
         profile: { type: 'string' },
         region: { type: 'string' },
+        role: { type: 'string' },
         template: { type: 'string' },
         name: { type: 'string' }
     },
@@ -29,6 +31,10 @@ const { values, positionals } = parseArgs({
     strict: false
 });
 const argv = { ...values, _: positionals } as DeployArgv;
+
+process.on('SIGINT', () => {
+    process.exit(130);
+});
 
 if (argv.version) {
     const packageJson = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
@@ -150,7 +156,7 @@ async function main(): Promise<void> {
             });
         } else if (command === 'update') {
             await runDeploymentCommand('Update failed', async () => {
-                await context.cfn.commands.update(context.name, cloudFormationPath, { parameters });
+                await context.cfn.commands.update(context.name, cloudFormationPath, { parameters, driftAware: argv.drift });
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {
