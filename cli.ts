@@ -11,6 +11,7 @@ import GH from './lib/gh.js';
 import Git from './lib/git.js';
 import Help from './lib/help.js';
 import Tags from './lib/tags.js';
+import Version from './lib/version.js';
 import type { DeployArgv } from './lib/types.js';
 
 const { values, positionals } = parseArgs({
@@ -56,8 +57,11 @@ if (mode[command] && argv.help) {
     process.exit(1);
 }
 
+const versionCheck = Version.check();
+
 try {
     await main();
+    await versionCheck;
 } catch (error) {
     const err = asError(error);
     console.error(`Unknown Error: ${err.message}`);

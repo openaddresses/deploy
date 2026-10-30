@@ -25,6 +25,9 @@ export default class Help {
         console.log('    --version, -v           Displays version information');
         console.log('    --help                  Prints this help message');
         console.log();
+        console.log('[environment]:');
+        console.log('    DEPLOY_NO_UPDATE_CHECK  Skip the check for a newer published version on each run');
+        console.log();
         process.exit(0);
     }
 }

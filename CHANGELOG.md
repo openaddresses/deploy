@@ -12,6 +12,10 @@
 
 ### Unreleased
 
+### v10.8.0 - 2026-10-30
+
+- :tada: Check the npm registry for a newer published version on each run and print an upgrade notice
+
 ### v10.7.1 - 2026-10-30
 
 - :arrow_up: Update CFN-Config to produce more detailed information when a changelog fails
