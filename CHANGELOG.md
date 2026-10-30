@@ -12,6 +12,10 @@
 
 ### Unreleased
 
+### v10.7.1 - 2026-10-30
+
+- :arrow_up: Update CFN-Config to produce more detailed information when a changelog fails
+
 ### v10.7.0 - 2026-10-21
 
 - :rocket: Add additional SSO session validation to ensure that the SSO session is valid and not expired before attempting to use it for profile resolution
