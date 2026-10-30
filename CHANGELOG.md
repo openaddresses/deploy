@@ -12,6 +12,10 @@
 
 ### Unreleased
 
+### v10.8.1 - 2026-10-30
+
+- :arrow_up: `@openaddresses/cfn-config@9.0.0` so failed changesets report Early Validation and Hook failures from `DescribeEvents`
+
 ### v10.8.0 - 2026-10-30
 
 - :tada: Check the npm registry for a newer published version on each run and print an upgrade notice
