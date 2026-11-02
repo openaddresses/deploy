@@ -22,6 +22,7 @@ const { values, positionals } = parseArgs({
         debug: { type: 'boolean' },
         force: { type: 'boolean' },
         drift: { type: 'boolean' },
+        'reuse-parameters': { type: 'boolean' },
         profile: { type: 'string' },
         region: { type: 'string' },
         role: { type: 'string' },
@@ -133,7 +134,7 @@ async function main(): Promise<void> {
                     existingTemplate = await context.cfn.lookup.info(`${context.repo}-${context.name}`);
                 }
 
-                context.cfn.commands.config.tags = await Tags.request(context, existingTemplate);
+                context.cfn.commands.config.tags = await Tags.request(context, existingTemplate, argv['reuse-parameters'] === true);
             }
         }
 
@@ -161,7 +162,11 @@ async function main(): Promise<void> {
             });
         } else if (command === 'update') {
             await runDeploymentCommand('Update failed', async () => {
-                await context.cfn.commands.update(context.name, cloudFormationPath, { parameters, driftAware: argv.drift });
+                await context.cfn.commands.update(context.name, cloudFormationPath, {
+                    parameters,
+                    driftAware: argv.drift,
+                    reuseParameters: argv['reuse-parameters'] === true
+                });
                 fs.unlinkSync(cloudFormationPath);
 
                 if (context.github) {

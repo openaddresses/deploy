@@ -72,6 +72,7 @@ export interface DeployArgv {
     debug?: boolean;
     force?: boolean;
     drift?: boolean;
+    'reuse-parameters'?: boolean;
     profile?: string;
     region?: string;
     role?: string;

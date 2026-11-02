@@ -57,6 +57,23 @@ For SSO logins, the underlying AWS CLI configuration remains in `~/.aws/config` 
 
 # Global Config `~/.deployrc.json`
 
+## Code-only deploys
+
+Every `update` walks the template's parameters as prompts, defaulting each to
+the stack's current value. When the only change is the code, pass
+`--reuse-parameters`:
+
+```sh
+deploy update prod --reuse-parameters
+```
+
+Parameters and tags the stack already has are taken from the stack without a
+prompt; only a parameter the stack does not know (new in the template) or whose
+value the template no longer allows is asked for. GitSha still comes from the
+checkout. The parameter diff, the template diff and the changeset are still
+shown and confirmed, so the review is unchanged and the Enter-per-parameter
+run, where a slip changes a value you meant to keep, is gone.
+
 ## Required Tags
 
 If an account uses tags for billing, the following can be used in the `~/.deployrc.json` file to ensure that
