@@ -3,7 +3,13 @@ import type { InfoOutput } from '@openaddresses/cfn-config';
 import type { DeployContext, DeployTag } from './types.js';
 
 export default class Tags extends Array<DeployTag> {
-    static async request(context: DeployContext, existingTemplate: InfoOutput | null): Promise<Tags> {
+    /**
+     * Collect the stack's tags: the fixed ones from .deploy, the rest asked
+     * for with the existing stack's values as defaults. With `reuse`, a tag
+     * that already has a value (fixed or on the stack) is not asked about;
+     * only tags nobody knows yet are prompted.
+     */
+    static async request(context: DeployContext, existingTemplate: InfoOutput | null, reuse = false): Promise<Tags> {
         const tags = new Tags();
         const known: Record<string, string> = {};
 
@@ -33,9 +39,11 @@ export default class Tags extends Array<DeployTag> {
             message: `${tag}. CloudFormation Tag Value:`
         }));
 
+        const toAsk = reuse ? request.filter((question) => question.default === undefined) : request;
+
         const responses = {
             ...known,
-            ...(await inquirer.prompt<Record<string, string>>(request))
+            ...(toAsk.length ? await inquirer.prompt<Record<string, string>>(toAsk) : {})
         };
 
         for (const [Key, Value] of Object.entries(responses)) {

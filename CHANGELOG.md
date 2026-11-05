@@ -12,6 +12,8 @@
 
 ### Unreleased
 
+- :tada: `deploy update --reuse-parameters` takes every parameter and tag the stack already has from the stack and prompts only for parameters the stack does not know (or whose value the template no longer allows). The parameter, template and changeset confirmations still run, so a code-only deploy is GitSha plus three confirmations instead of a prompt per parameter. Requires `@openaddresses/cfn-config@9.1.1`
+
 ### v10.8.1 - 2026-10-30
 
 - :arrow_up: `@openaddresses/cfn-config@9.0.0` so failed changesets report Early Validation and Hook failures from `DescribeEvents`
