@@ -12,6 +12,10 @@
 
 ### Unreleased
 
+### v10.9.1 - 2026-11-05
+
+- :arrow_up: Update Core Dependencies
+
 ### v10.9.0 - 2026-11-05
 
 - :tada: `deploy update --reuse-parameters` takes every parameter and tag the stack already has from the stack and prompts only for parameters the stack does not know (or whose value the template no longer allows). The parameter, template and changeset confirmations still run, so a code-only deploy is GitSha plus three confirmations instead of a prompt per parameter. Requires `@openaddresses/cfn-config@9.1.1`
