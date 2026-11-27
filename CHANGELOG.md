@@ -12,6 +12,10 @@
 
 ### Unreleased
 
+### v10.10.1 - 2026-11-27
+
+- :bug: Add OXLint Config file
+
 ### v10.10.0 - 2026-11-27
 
 - :tada: Add `--skip-artifacts` to bypass artifact checks on `create` and `update`
