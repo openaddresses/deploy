@@ -5,7 +5,7 @@ import path from 'node:path';
 import inquirer from 'inquirer';
 import { parseArgs } from 'node:util';
 import Git from './git.js';
-import type { DeployArgv } from './types.js';
+import { errorCode, isRecord, parseJson, toArgv } from './util.js';
 
 export interface AwsConfigProfile {
     name: string;
@@ -62,7 +62,7 @@ export default class SSO {
             strict: false
         });
 
-        const argv = { ...values, _: positionals } as DeployArgv;
+        const argv = toArgv(values, positionals);
         const profiles = this.readAwsConfig();
         const defaultProfile = this.readDotDeployProfile();
         const profile = await this.resolveProfile({
@@ -134,7 +134,7 @@ export default class SSO {
         }
 
         const profile = this.parseAwsConfig(config)[profileName];
-        if (!profile?.ssoSession || this.parseSsoSessions(config)[profile.ssoSession]) {
+        if (!profile?.ssoSession || Object.hasOwn(this.parseSsoSessions(config), profile.ssoSession)) {
             return undefined;
         }
 
@@ -219,7 +219,7 @@ export default class SSO {
 
         const candidates = Object.values(options.profiles)
             .filter((profile) => this.isSsoProfile(profile))
-            .sort((left, right) => left.name.localeCompare(right.name));
+            .toSorted((left, right) => left.name.localeCompare(right.name));
 
         return this.pickProfile(candidates, 'No AWS SSO profiles found in ~/.aws/config');
     }
@@ -229,8 +229,7 @@ export default class SSO {
         try {
             raw = fs.readFileSync(configPath, 'utf8');
         } catch (error) {
-            const err = error as NodeJS.ErrnoException;
-            if (err.code === 'ENOENT') {
+            if (errorCode(error) === 'ENOENT') {
                 throw new Error('AWS config not found at ~/.aws/config. Run aws configure sso first.', {
                     cause: error
                 });
@@ -258,8 +257,8 @@ export default class SSO {
                 continue;
             }
 
-            const parsed = JSON.parse(fs.readFileSync(attempt, 'utf8')) as { profile?: unknown };
-            if (typeof parsed.profile === 'string' && parsed.profile) {
+            const parsed = parseJson(fs.readFileSync(attempt, 'utf8'));
+            if (isRecord(parsed) && typeof parsed.profile === 'string' && parsed.profile) {
                 return parsed.profile;
             }
         }
@@ -305,11 +304,11 @@ export default class SSO {
     }
 
     private static resolveNamedProfile(name: string, profiles: AwsConfigRecord): string {
-        const profile = profiles[name];
-
-        if (!profile) {
+        if (!Object.hasOwn(profiles, name)) {
             throw new Error(`AWS profile ${name} not found in ~/.aws/config`);
         }
+
+        const profile = profiles[name];
 
         if (!this.isSsoProfile(profile)) {
             throw new Error(`AWS profile ${name} is not configured for SSO`);
@@ -328,7 +327,7 @@ export default class SSO {
             .filter((profile) => this.isSsoProfile(profile))
             .filter((profile) => profile.ssoAccountId === options.accountId)
             .filter((profile) => !options.role || profile.ssoRoleName === options.role)
-            .sort((left, right) => left.name.localeCompare(right.name));
+            .toSorted((left, right) => left.name.localeCompare(right.name));
     }
 
     private static async pickProfile(candidates: AwsConfigProfile[], emptyMessage: string): Promise<string> {
@@ -364,8 +363,8 @@ export default class SSO {
             }
         }
 
-        const profile = this.parseAwsConfig(config)[profileName];
-        return profile ? this.isSsoProfile(profile) : false;
+        const profiles = this.parseAwsConfig(config);
+        return Object.hasOwn(profiles, profileName) && this.isSsoProfile(profiles[profileName]);
     }
 
     static login(profile: string): void {

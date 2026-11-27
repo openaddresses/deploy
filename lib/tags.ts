@@ -41,10 +41,8 @@ export default class Tags extends Array<DeployTag> {
 
         const toAsk = reuse ? request.filter((question) => question.default === undefined) : request;
 
-        const responses = {
-            ...known,
-            ...(toAsk.length ? await inquirer.prompt<Record<string, string>>(toAsk) : {})
-        };
+        const asked: Record<string, string> = toAsk.length > 0 ? await inquirer.prompt<Record<string, string>>(toAsk) : {};
+        const responses = { ...known, ...asked };
 
         for (const [Key, Value] of Object.entries(responses)) {
             tags.push({ Key, Value });

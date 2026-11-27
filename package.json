@@ -10,9 +10,8 @@
         "build": "tsc -p tsconfig.json && cp -r data dist/ && cp package.json dist/",
         "postbuild": "chmod +x dist/cli.js",
         "typecheck": "tsc --noEmit -p tsconfig.json",
-        "lint": "eslint cli.ts lib/ test/",
+        "lint": "oxlint --type-aware --deny-warnings --report-unused-disable-directives",
         "test": "vitest run",
-        "doc": "typedoc --entryPoints cli.ts --out docs",
         "prepack": "npm run build"
     },
     "bin": {
@@ -43,15 +42,12 @@
         "prompt": "^1.0.0"
     },
     "devDependencies": {
-        "@eslint/js": "^10.0.0",
         "@types/cli-table": "^0.3.4",
         "@types/node": "^26.0.0",
         "@types/prompt": "^1.1.8",
-        "eslint": "^10.0.0",
-        "eslint-plugin-n": "^18.0.0",
-        "typedoc": "^0.28.0",
-        "typescript": "^6.0.2",
-        "typescript-eslint": "^8.46.1",
+        "oxlint": "^1.95.0",
+        "oxlint-tsgolint": "^7.0.2009",
+        "typescript": "^7.0.2",
         "vitest": "^5.0.0"
     }
 }

@@ -2,6 +2,7 @@ import Handlebars from 'handlebars';
 import ora from 'ora';
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { DeployContext } from '../types.js';
+import { asError } from '../util.js';
 
 const retries = new Map<string, number>();
 const MAX_RETRIES = 60;
@@ -10,7 +11,7 @@ export default async function check(creds: DeployContext): Promise<true | void> 
     const objects: string[] = [];
     const s3Artifacts = creds.dotdeploy.artifacts?.s3;
 
-    if (s3Artifacts === false || !s3Artifacts) {
+    if (s3Artifacts === false || s3Artifacts === undefined || s3Artifacts === '') {
         return;
     }
 
@@ -41,12 +42,12 @@ async function single(creds: DeployContext, objectTemplate: string): Promise<str
         region: creds.region,
         project: creds.repo,
         gitsha: creds.sha
-    }) as string;
+    });
 
     const progress = ora(`S3 Object: AWS::S3:${object}`).start();
     retries.set(object, 0);
 
-    return await new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         const checkS3 = async (): Promise<void> => {
             try {
                 const [bucket, ...keyParts] = object.split('/');
@@ -74,7 +75,7 @@ async function single(creds: DeployContext, objectTemplate: string): Promise<str
                 }
 
                 progress.fail();
-                reject(error);
+                reject(asError(error));
             }
         };
 

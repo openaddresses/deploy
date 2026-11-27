@@ -1,6 +1,8 @@
-import fs from 'node:fs';
+import { setTimeout as sleep } from 'node:timers/promises';
 import ora from 'ora';
 import Git from './git.js';
+import Version from './version.js';
+import { asError, isRecord } from './util.js';
 import type { DeployContext, GitHubPollingConfig } from './types.js';
 
 type DeploymentState = 'pending' | 'success' | 'failure';
@@ -27,15 +29,13 @@ export default class GH {
     readonly context: DeployContext;
 
     constructor(context: DeployContext) {
-        const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
-
         this.repo = Git.repo();
         this.enabled = Boolean(context.github);
         this.headers = {
             Accept: 'application/vnd.github.v3+json',
             Authorization: `Bearer ${context.github ?? ''}`,
             'X-GitHub-Api-Version': '2022-11-28',
-            'User-Agent': `openaddresses-deploy@${pkg.version}`,
+            'User-Agent': `openaddresses-deploy@${Version.current()}`,
             'Content-Type': 'application/json'
         };
         this.context = context;
@@ -48,7 +48,7 @@ export default class GH {
 
         const state = this.deploymentState(success);
 
-        if (state === 'pending' && this.context.force !== true) {
+        if (state === 'pending' && !this.context.force) {
             try {
                 await this.pollStatusChecks(this.context.githubPolling);
             } catch (error) {
@@ -58,13 +58,13 @@ export default class GH {
             }
         }
 
-        if (this.context.deployment) {
+        if (this.context.deployment !== false) {
             await this.deployment_update(stack, state);
             return;
         }
 
         const deploymentId = await this.deployment_list(stack);
-        if (!deploymentId) {
+        if (deploymentId === false) {
             await this.deployment_create(stack);
             if (state !== 'pending') {
                 await this.deployment_update(stack, state);
@@ -82,7 +82,7 @@ export default class GH {
             headers: this.headers
         });
 
-        const body = await response.json() as GitHubCheckRunsResponse;
+        const body: unknown = await response.json();
         if (!response.ok) {
             if (this.context.force) {
                 console.log('warn - Error in Github Status, skipping due to --force');
@@ -91,6 +91,10 @@ export default class GH {
 
             console.error(body);
             throw new Error('Could not list status checks');
+        }
+
+        if (!isCheckRunsResponse(body)) {
+            throw new Error('Unexpected GitHub check runs response');
         }
 
         return body;
@@ -130,7 +134,7 @@ export default class GH {
                     return;
                 }
 
-                await new Promise((resolve) => setTimeout(resolve, interval));
+                await sleep(interval);
             }
 
             progress.fail(`GitHub Status Checks: Timeout after ${timeout / 1000 / 60} minutes`);
@@ -154,7 +158,7 @@ export default class GH {
             method: 'GET',
             headers: this.headers
         });
-        const body = await response.json() as GitHubDeployment[];
+        const body: unknown = await response.json();
 
         if (!response.ok) {
             if (this.context.force) {
@@ -166,7 +170,10 @@ export default class GH {
             throw new Error('Could not list deployments');
         }
 
-        return body.length > 0 ? body[0].id : false;
+        const list: unknown[] = Array.isArray(body) ? body : [];
+        const first = list.find((item) => isDeployment(item));
+
+        return first === undefined ? false : first.id;
     }
 
     async deployment_create(stack: string): Promise<void> {
@@ -180,7 +187,7 @@ export default class GH {
                 production_environment: ['prod', 'production'].includes(stack)
             })
         });
-        const body = await response.json() as GitHubDeployment;
+        const body: unknown = await response.json();
 
         if (!response.ok) {
             if (this.context.force) {
@@ -190,6 +197,10 @@ export default class GH {
 
             console.error(body);
             throw new Error('Could not create deployment');
+        }
+
+        if (!isDeployment(body)) {
+            throw new Error('Unexpected GitHub deployment response');
         }
 
         this.context.deployment = body.id;
@@ -247,6 +258,10 @@ export default class GH {
     }
 }
 
-function asError(error: unknown): Error {
-    return error instanceof Error ? error : new Error(String(error));
+function isCheckRunsResponse(body: unknown): body is GitHubCheckRunsResponse {
+    return isRecord(body) && (body.check_runs === undefined || Array.isArray(body.check_runs));
+}
+
+function isDeployment(body: unknown): body is GitHubDeployment {
+    return isRecord(body) && typeof body.id === 'number';
 }

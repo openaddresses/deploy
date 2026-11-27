@@ -1,24 +1,27 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import AjvModule from 'ajv';
+import { Ajv } from 'ajv';
 import Handlebars from 'handlebars';
 import CFN from '@openaddresses/cfn-config';
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { fromIni } from '@aws-sdk/credential-providers';
 import Git from './git.js';
 import SSO from './sso.js';
+import { isRecord, parseJson } from './util.js';
 import type { AwsCredentials, DeployArgv, ConfigTag, DeployProfile, DotDeployConfig, GitHubPollingConfig, DeployTag } from './types.js';
 
-const AjvConstructor = ((AjvModule as unknown as { default?: unknown }).default ?? AjvModule) as new (options?: object) => {
-    compile: (schema: object) => {
-        (data: unknown): boolean;
-        errors?: unknown;
-    };
-};
-
-const ajv = new AjvConstructor({
+const ajv = new Ajv({
     allErrors: true
 });
+
+function readSchema(name: string): Record<string, unknown> {
+    const schema = parseJson(fs.readFileSync(new URL(`../data/${name}`, import.meta.url), 'utf8'));
+    if (!isRecord(schema)) {
+        throw new TypeError(`${name} is not a JSON schema object`);
+    }
+
+    return schema;
+}
 
 const PROFILE_KEYS = ['region', 'github', 'role'] as const;
 
@@ -63,15 +66,16 @@ export default class Credentials {
             throw new Error('Could not determine git sha');
         }
 
-        creds.stack = String(argv._[1] ?? '').replace(new RegExp(`^${creds.repo}-`), '');
+        creds.stack = (argv._[1] ?? '').replace(new RegExp(`^${creds.repo}-`), '');
         creds.force = argv.force ?? false;
-        creds.dotdeploy = Credentials.dot_deploy() || {};
+        const dotdeploy = Credentials.dot_deploy();
+        creds.dotdeploy = dotdeploy === false ? {} : dotdeploy;
 
         const readcreds = Credentials.readProfiles();
 
         Object.keys(readcreds).forEach((key) => {
             if (readcreds[key] !== undefined) {
-                creds.profiles[key] = readcreds[key] as DeployProfile;
+                creds.profiles[key] = readcreds[key];
             }
         });
 
@@ -100,7 +104,7 @@ export default class Credentials {
             creds.profile = Object.keys(creds.profiles)[0] ?? 'default';
         }
 
-        if (!creds.profiles[creds.profile]) {
+        if (!Object.hasOwn(creds.profiles, creds.profile)) {
             creds.profiles[creds.profile] = {};
         }
 
@@ -178,22 +182,20 @@ export default class Credentials {
             path.resolve(Git.root(), '.deploy')
         ]));
 
-        const validate = ajv.compile(JSON.parse(fs.readFileSync(new URL('../data/schema.json', import.meta.url), 'utf8')) as object);
+        const validate = ajv.compile<DotDeployConfig>(readSchema('schema.json'));
 
         for (const attempt of attempts) {
             if (!fs.existsSync(attempt)) {
                 continue;
             }
 
-            let dotdeploy: DotDeployConfig;
+            let dotdeploy: unknown;
             try {
-                dotdeploy = JSON.parse(fs.readFileSync(attempt, 'utf8')) as DotDeployConfig;
+                dotdeploy = parseJson(fs.readFileSync(attempt, 'utf8'));
             } catch (error) {
-                if (error instanceof SyntaxError) {
-                    throw new Error(`Invalid JSON in ${attempt} file`, { cause: error });
-                }
-
-                throw error;
+                throw error instanceof SyntaxError
+                    ? new Error(`Invalid JSON in ${attempt} file`, { cause: error })
+                    : error;
             }
 
             if (!validate(dotdeploy)) {
@@ -208,7 +210,7 @@ export default class Credentials {
     }
 
     static async resolveCredentials(profile: string): Promise<AwsCredentials> {
-        const load = async (): Promise<AwsCredentials> => await (await fromIni({ profile })()) as AwsCredentials;
+        const load = async (): Promise<AwsCredentials> => fromIni({ profile })();
         const fail = (error: unknown): never => {
             const err = error instanceof Error ? error : new Error(String(error));
             const reason = SSO.missingSession(profile) ?? err.message;
@@ -241,6 +243,7 @@ export default class Credentials {
     }
 
     static interactive(): boolean {
+        // oxlint-disable-next-line typescript/no-unnecessary-type-conversion -- undefined when stdin is not a TTY
         return Boolean(process.stdin.isTTY);
     }
 
@@ -282,15 +285,15 @@ export default class Credentials {
     }
 
     private static readProfiles(): Record<string, DeployProfile> {
-        let readcreds: Record<string, DeployProfile>;
+        let readcreds: unknown;
         try {
             const raw = fs.readFileSync(path.resolve(process.env.HOME ?? '', '.deployrc.json'), 'utf8');
-            readcreds = JSON.parse(raw) as Record<string, DeployProfile>;
+            readcreds = parseJson(raw);
         } catch {
             readcreds = {};
         }
 
-        const validate = ajv.compile(JSON.parse(fs.readFileSync(new URL('../data/rc_schema.json', import.meta.url), 'utf8')) as object);
+        const validate = ajv.compile<Record<string, DeployProfile>>(readSchema('rc_schema.json'));
         if (!validate(readcreds)) {
             console.error(JSON.stringify(validate.errors, null, 4));
             throw new Error('~/.deployrc.json does not conform to schema');

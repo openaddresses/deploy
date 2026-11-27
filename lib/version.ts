@@ -1,11 +1,24 @@
 import fs from 'node:fs';
+import { isRecord, parseJson } from './util.js';
 
 const REGISTRY = 'https://registry.npmjs.org/@openaddresses%2Fdeploy/latest';
 const TIMEOUT_MS = 2000;
 
+function parseVersion(version: string): number[] {
+    const [core] = version.replace(/^v/, '').split(/[-+]/);
+    return core.split('.').map((part) => {
+        const value = Math.trunc(Number(part));
+        return Number.isNaN(value) ? 0 : value;
+    });
+}
+
 export default class Version {
     static current(): string {
-        const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
+        const pkg = parseJson(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+        if (!isRecord(pkg) || typeof pkg.version !== 'string') {
+            throw new Error('package.json is missing a version');
+        }
+
         return pkg.version;
     }
 
@@ -18,21 +31,16 @@ export default class Version {
 
             if (!response.ok) return null;
 
-            const body = await response.json() as { version?: unknown };
-            return typeof body.version === 'string' ? body.version : null;
+            const body: unknown = await response.json();
+            return isRecord(body) && typeof body.version === 'string' ? body.version : null;
         } catch {
             return null;
         }
     }
 
     static isNewer(candidate: string, current: string): boolean {
-        const parse = (version: string): number[] => {
-            const [core] = version.replace(/^v/, '').split(/[-+]/);
-            return core.split('.').map((part) => Number.parseInt(part, 10) || 0);
-        };
-
-        const a = parse(candidate);
-        const b = parse(current);
+        const a = parseVersion(candidate);
+        const b = parseVersion(current);
 
         for (let i = 0; i < Math.max(a.length, b.length); i++) {
             const diff = (a[i] ?? 0) - (b[i] ?? 0);
@@ -54,7 +62,9 @@ export default class Version {
 
         if (!latest || !Version.isNewer(latest, current)) return null;
 
-        const log = options.log ?? ((msg: string) => console.error(msg));
+        const log = options.log ?? ((msg: string): void => {
+            console.error(msg);
+        });
         log(`\nA new version of deploy is available: ${current} -> ${latest}`);
         log('Run: npm install -g @openaddresses/deploy\n');
 

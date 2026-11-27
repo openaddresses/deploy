@@ -2,7 +2,8 @@ import Table from 'cli-table';
 import { parseArgs } from 'node:util';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import type { InfoOutput } from '@openaddresses/cfn-config';
-import type { DeployArgv, DeployContext } from './types.js';
+import type { DeployContext } from './types.js';
+import { isRecord, parseJson, toArgv } from './util.js';
 
 export default class Info {
     static short = 'Get information on a specific stack within the current repo';
@@ -34,7 +35,7 @@ export default class Info {
             allowPositionals: true,
             strict: false
         });
-        const argv = { ...values, _: [] } as DeployArgv;
+        const argv = toArgv(values);
 
         if (!context.stack) {
             console.error('Stack name required: run deploy info --help');
@@ -49,8 +50,8 @@ export default class Info {
         const info = await context.cfn.lookup.info(`${context.repo}-${context.name}`);
         await this.resolveSecrets(secretsManager, info);
 
-        const showParameters = Boolean(argv.parameter || argv.parameters);
-        const showOutputs = Boolean(argv.output || argv.outputs);
+        const showParameters = argv.parameter === true || argv.parameters === true;
+        const showOutputs = argv.output === true || argv.outputs === true;
 
         if (showParameters) {
             this.table('Parameters', Object.fromEntries(info.Parameters));
@@ -61,7 +62,7 @@ export default class Info {
         }
 
         if (!showOutputs && !showParameters) {
-            console.log(JSON.stringify(info, (_key, value) => {
+            console.log(JSON.stringify(info, (_key, value: unknown): unknown => {
                 if (value instanceof Map) {
                     return Object.fromEntries(value);
                 }
@@ -114,8 +115,13 @@ export default class Info {
 
                 let value = responseField === 'SecretString' ? secret.SecretString : undefined;
                 if (jsonKey) {
-                    const parsedSecret = JSON.parse(secret.SecretString ?? '{}') as Record<string, string>;
-                    value = parsedSecret[jsonKey];
+                    const parsedSecret = parseJson(secret.SecretString ?? '{}');
+                    const field = isRecord(parsedSecret) ? parsedSecret[jsonKey] : undefined;
+                    if (typeof field === 'string') {
+                        value = field;
+                    } else {
+                        value = field === undefined ? undefined : JSON.stringify(field);
+                    }
                 }
 
                 resolvedOutput = resolvedOutput.replace(match, value ?? '');

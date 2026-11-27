@@ -8,7 +8,8 @@ import {
     ListServicesCommand,
     ListTasksCommand
 } from '@aws-sdk/client-ecs';
-import type { DeployArgv, DeployContext } from './types.js';
+import type { DeployContext } from './types.js';
+import { toArgv } from './util.js';
 
 export default class Exec {
     static short = 'SSH into a fargate container';
@@ -40,7 +41,7 @@ export default class Exec {
             allowPositionals: true,
             strict: false
         });
-        const argv = { ...values, _: [] } as DeployArgv;
+        const argv = toArgv(values);
 
         if (!argv.region) {
             argv.region = context.region;
@@ -53,7 +54,7 @@ export default class Exec {
 
         if (!argv.cluster) {
             const response = await ecs.send(new ListClustersCommand({}));
-            const choices = (response.clusterArns ?? []).map((cluster) => cluster.split('/').pop() ?? cluster).sort();
+            const choices = (response.clusterArns ?? []).map((cluster) => cluster.split('/').pop() ?? cluster).toSorted();
 
             if (choices.length === 0) {
                 throw new Error('No ECS clusters found');
@@ -72,7 +73,7 @@ export default class Exec {
             const servicesResponse = await ecs.send(new ListServicesCommand({
                 cluster: argv.cluster
             }));
-            const serviceChoices = (servicesResponse.serviceArns ?? []).map((service) => service.split('/').pop() ?? service).sort();
+            const serviceChoices = (servicesResponse.serviceArns ?? []).map((service) => service.split('/').pop() ?? service).toSorted();
 
             if (serviceChoices.length === 0) {
                 throw new Error(`No ECS services found for cluster ${argv.cluster}`);
@@ -100,7 +101,7 @@ export default class Exec {
                 cluster: argv.cluster,
                 serviceName: argv.service
             }));
-            const taskChoices = (tasks.taskArns ?? []).map((task) => task.split('/').pop() ?? task).sort();
+            const taskChoices = (tasks.taskArns ?? []).map((task) => task.split('/').pop() ?? task).toSorted();
 
             if (taskChoices.length === 0) {
                 throw new Error(`No ECS tasks found for service ${argv.service}`);
@@ -120,7 +121,7 @@ export default class Exec {
                 cluster: argv.cluster,
                 tasks: [argv.task ?? '']
             }));
-            const containerChoices = (tasks.tasks?.[0]?.containers ?? []).map((container) => container.name ?? '').filter(Boolean).sort();
+            const containerChoices = (tasks.tasks?.[0]?.containers ?? []).map((container) => container.name ?? '').filter(Boolean).toSorted();
 
             if (containerChoices.length === 0) {
                 throw new Error(`No containers found for task ${argv.task}`);

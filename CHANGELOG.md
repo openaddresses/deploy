@@ -12,6 +12,12 @@
 
 ### Unreleased
 
+### v10.10.0 - 2026-11-27
+
+- :tada: Add `--skip-artifacts` to bypass artifact checks on `create` and `update`
+- :rocket: Replace ESLint with strict type-aware oxlint
+- :arrow_up: Update to TypeScript 7 and remove typedoc
+
 ### v10.9.1 - 2026-11-05
 
 - :arrow_up: Update Core Dependencies

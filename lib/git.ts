@@ -71,6 +71,6 @@ export default class Git {
 
     static pushed(): boolean {
         const git = cp.spawnSync('git', ['--git-dir', path.resolve(this.root(), '.git'), 'status']);
-        return !/Your branch is ahead of/.test(String(git.stdout ?? ''));
+        return !String(git.stdout ?? '').includes('Your branch is ahead of');
     }
 }

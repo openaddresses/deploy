@@ -3,6 +3,7 @@ import Handlebars from 'handlebars';
 import ora from 'ora';
 import { BatchGetImageCommand, ECRClient } from '@aws-sdk/client-ecr';
 import type { DeployContext } from '../types.js';
+import { asError } from '../util.js';
 
 const retries = new Map<string, number>();
 const MAX_RETRIES = 60;
@@ -15,7 +16,7 @@ export default async function check(creds: DeployContext): Promise<true | void> 
         return;
     }
 
-    if (!dockerArtifacts) {
+    if (dockerArtifacts === undefined || dockerArtifacts === '') {
         try {
             fs.accessSync('./Dockerfile');
         } catch {
@@ -50,7 +51,7 @@ async function single(creds: DeployContext, imageTemplate: string): Promise<stri
         region: creds.region,
         project: creds.repo,
         gitsha: creds.sha
-    }) as string;
+    });
 
     const progress = ora(`Docker Image: AWS::ECR:${image}`).start();
     retries.set(image, 0);
@@ -60,7 +61,7 @@ async function single(creds: DeployContext, imageTemplate: string): Promise<stri
         throw new Error('docker artifact must be in format <ECR>:<TAG>');
     }
 
-    return await new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         const checkEcr = async (): Promise<void> => {
             try {
                 const [repositoryName, imageTag] = image.split(':');
@@ -88,7 +89,7 @@ async function single(creds: DeployContext, imageTemplate: string): Promise<stri
                 reject(new Error(`No image found for: ${image}`));
             } catch (error) {
                 progress.fail();
-                reject(error);
+                reject(asError(error));
             }
         };
 

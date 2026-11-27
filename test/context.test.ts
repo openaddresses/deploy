@@ -48,7 +48,7 @@ function makeArgv(overrides: Partial<DeployArgv> = {}): DeployArgv {
         template: false,
         force: false,
         ...overrides
-    } as DeployArgv;
+    };
 }
 
 function mockRcFile(content: Record<string, unknown>, awsConfig = ''): void {

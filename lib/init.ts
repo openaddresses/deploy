@@ -6,14 +6,15 @@ import type { BucketLocationConstraint } from '@aws-sdk/client-s3';
 import { fromIni } from '@aws-sdk/credential-providers';
 import { CreateBucketCommand, HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import type { DeployContext, DeployProfile } from './types.js';
+import { asError, errorCode, isRecord, parseJson } from './util.js';
 
-interface InitPromptResponse {
-    'profile-name': string;
-    region: string;
+function promptValue(answers: Record<string, unknown>, key: string): string {
+    const value = answers[key];
+    return typeof value === 'string' ? value : '';
 }
 
-interface BucketPromptResponse {
-    create: string;
+function isProfiles(value: unknown): value is Record<string, DeployProfile> {
+    return isRecord(value) && Object.values(value).every((profile) => isRecord(profile));
 }
 
 prompt.message = '$';
@@ -42,14 +43,16 @@ export default class Init {
             type: 'string',
             required: true,
             default: 'us-east-1'
-        }]) as unknown as InitPromptResponse;
+        }]);
+        const profileName = promptValue(answers, 'profile-name');
+        const region = promptValue(answers, 'region');
 
-        const awscreds = await (await fromIni({
-            profile: answers['profile-name']
-        })()) as { accessKeyId?: string };
+        const awscreds = await fromIni({
+            profile: profileName
+        })();
 
         if (!awscreds.accessKeyId) {
-            throw new Error(`No profile for ${answers['profile-name']} found in ~/.aws/credentials`);
+            throw new Error(`No profile for ${profileName} found in ~/.aws/credentials`);
         }
 
         const deployRcPath = path.resolve(os.homedir(), '.deployrc.json');
@@ -57,17 +60,19 @@ export default class Init {
 
         try {
             const content = await fs.readFile(deployRcPath, 'utf8');
-            creds = JSON.parse(content) as Record<string, DeployProfile>;
+            const parsed = parseJson(content);
+            if (isProfiles(parsed)) {
+                creds = parsed;
+            }
         } catch (error) {
-            const err = error as NodeJS.ErrnoException;
-            if (err.code !== 'ENOENT') {
-                console.log(`Could not read .deployrc.json (${err.message})`);
+            if (errorCode(error) !== 'ENOENT') {
+                console.log(`Could not read .deployrc.json (${asError(error).message})`);
             }
         }
 
-        creds[answers['profile-name']] = {
-            ...(creds[answers['profile-name']] ?? {}),
-            region: answers.region
+        creds[profileName] = {
+            ...creds[profileName],
+            region
         };
 
         await fs.writeFile(deployRcPath, JSON.stringify(creds, null, 4));
@@ -87,8 +92,8 @@ export default class Init {
                     ExpectedBucketOwner: await context.accountId()
                 }));
             } catch (error) {
-                const err = error as { name?: string };
-                if (err.name !== 'NotFound' && err.name !== 'NoSuchBucket') {
+                const name = error instanceof Error ? error.name : undefined;
+                if (name !== 'NotFound' && name !== 'NoSuchBucket') {
                     throw error;
                 }
 
@@ -99,9 +104,9 @@ export default class Init {
                     type: 'string',
                     required: true,
                     default: 'y/N'
-                }]) as unknown as BucketPromptResponse;
+                }]);
 
-                if (answer.create.toLowerCase() !== 'y') {
+                if (promptValue(answer, 'create').toLowerCase() !== 'y') {
                     continue;
                 }
 
@@ -109,6 +114,7 @@ export default class Init {
                     Bucket: fullName,
                     ...(context.region === 'us-east-1' ? {} : {
                         CreateBucketConfiguration: {
+                            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK enum lags new regions
                             LocationConstraint: context.region as BucketLocationConstraint
                         }
                     })

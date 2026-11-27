@@ -22,6 +22,7 @@ export default class Help {
         console.log('                              if the project has multiple CF templates, they can be deployed by specifying');
         console.log('                              their location with this flag. The stack will be named:');
         console.log('                              <repo>-<stack name>-<template name>');
+        console.log('    --skip-artifacts        Skip the Docker/S3 artifact checks before a create or update');
         console.log('    --version, -v           Displays version information');
         console.log('    --help                  Prints this help message');
         console.log();

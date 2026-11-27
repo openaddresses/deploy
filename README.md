@@ -166,6 +166,9 @@ and available template variables are identical to the `role` key in `~/.deployrc
 
 ## Artifacts
 
+Artifact checks run before every `create` and `update`. Pass `--skip-artifacts` to bypass them for a single run,
+for example when deploying a secondary template that does not use the images.
+
 ### Watching for Docker Artifacts
 
 By default, if a `Dockerfile` is found in the project root, the ECR will be queried before deploy to ensure

@@ -1,7 +1,8 @@
 import { parseArgs } from 'node:util';
 import { ListStacksCommand, CloudFormationClient } from '@aws-sdk/client-cloudformation';
 import { DescribeRegionsCommand, EC2Client } from '@aws-sdk/client-ec2';
-import type { DeployArgv, DeployContext } from './types.js';
+import type { DeployContext } from './types.js';
+import { toArgv } from './util.js';
 
 export default class List {
     static short = 'List all stack assoc. with the current repo';
@@ -28,7 +29,7 @@ export default class List {
             allowPositionals: true,
             strict: false
         });
-        const argv = { ...values, _: [] } as DeployArgv;
+        const argv = toArgv(values);
 
         if (argv.all && argv.region) {
             throw new Error('--all & --region cannot be used together');

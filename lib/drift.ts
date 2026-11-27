@@ -1,3 +1,5 @@
+import { setTimeout as sleep } from 'node:timers/promises';
+import { asError } from './util.js';
 import Table from 'cli-table';
 import ora from 'ora';
 import { parseArgs } from 'node:util';
@@ -56,10 +58,10 @@ export default class Drift {
                 }));
                 StackDriftDetectionId = result.StackDriftDetectionId;
             } catch (error) {
-                const err = error as Error;
+                const err = asError(error);
                 if (err.message.includes('already in progress')) {
                     progress.text = `Waiting for existing drift detection to complete: ${stackName}`;
-                    await new Promise<void>((resolve) => setTimeout(resolve, 5000));
+                    await sleep(5000);
                 } else {
                     progress.fail();
                     throw err;
@@ -77,7 +79,7 @@ export default class Drift {
         // Poll until drift detection completes
         let detectionStatus = 'DETECTION_IN_PROGRESS';
         while (detectionStatus === 'DETECTION_IN_PROGRESS') {
-            await new Promise<void>((resolve) => setTimeout(resolve, 5000));
+            await sleep(5000);
 
             const status = await cloudFormation.send(new DescribeStackDriftDetectionStatusCommand({
                 StackDriftDetectionId
@@ -122,9 +124,9 @@ export default class Drift {
         for (const drift of drifts) {
             const status = drift.StackResourceDriftStatus ?? '';
             const coloredStatus = status === 'MODIFIED'
-                ? `\x1b[33m${status}\x1b[0m`
+                ? `\u001B[33m${status}\u001B[0m`
                 : status === 'DELETED'
-                    ? `\x1b[31m${status}\x1b[0m`
+                    ? `\u001B[31m${status}\u001B[0m`
                     : status;
 
             table.push([

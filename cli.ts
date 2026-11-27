@@ -12,7 +12,7 @@ import Git from './lib/git.js';
 import Help from './lib/help.js';
 import Tags from './lib/tags.js';
 import Version from './lib/version.js';
-import type { DeployArgv } from './lib/types.js';
+import { asError, isRecord, toArgv } from './lib/util.js';
 
 const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
@@ -23,6 +23,7 @@ const { values, positionals } = parseArgs({
         force: { type: 'boolean' },
         drift: { type: 'boolean' },
         'reuse-parameters': { type: 'boolean' },
+        'skip-artifacts': { type: 'boolean' },
         profile: { type: 'string' },
         region: { type: 'string' },
         role: { type: 'string' },
@@ -32,15 +33,14 @@ const { values, positionals } = parseArgs({
     allowPositionals: true,
     strict: false
 });
-const argv = { ...values, _: positionals } as DeployArgv;
+const argv = toArgv(values, positionals);
 
 process.on('SIGINT', () => {
     process.exit(130);
 });
 
 if (argv.version) {
-    const packageJson = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
-    console.log(`openaddresses-deploy@${packageJson.version}`);
+    console.log(`openaddresses-deploy@${Version.current()}`);
     process.exit(0);
 }
 
@@ -48,10 +48,11 @@ if (!argv._[0] || argv._[0] === 'help' || (!argv._[0] && argv.help)) {
     Help.main();
 }
 
-const command = String(argv._[0]);
+const command = argv._[0];
+const subcommand = Object.hasOwn(mode, command) ? mode[command] : undefined;
 
-if (mode[command] && argv.help) {
-    mode[command].help();
+if (subcommand && argv.help) {
+    subcommand.help();
     process.exit(0);
 } else if (argv.help) {
     console.error('Subcommand not found!');
@@ -112,19 +113,10 @@ async function main(): Promise<void> {
                 }
             }
 
-            try {
-                await artifacts(context);
-            } catch (error) {
-                const err = asError(error);
-                console.error(`Artifacts Check Failed: ${err.message}`);
-                if (argv.debug) {
-                    throw err;
-                }
-                process.exit(1);
-            }
+            await checkArtifacts(context);
 
-            if (context.github) {
-                await gh.deployment(String(argv._[1] ?? context.name));
+            if (context.github !== false) {
+                await gh.deployment(argv._[1] ?? context.name);
             }
 
             if (context.tags.length > 0) {
@@ -156,8 +148,8 @@ async function main(): Promise<void> {
                 await context.cfn.commands.create(context.name, cloudFormationPath, { parameters });
                 fs.unlinkSync(cloudFormationPath);
 
-                if (context.github) {
-                    await gh.deployment(String(argv._[1] ?? context.name), true);
+                if (context.github !== false) {
+                    await gh.deployment(argv._[1] ?? context.name, true);
                 }
             });
         } else if (command === 'update') {
@@ -169,19 +161,18 @@ async function main(): Promise<void> {
                 });
                 fs.unlinkSync(cloudFormationPath);
 
-                if (context.github) {
-                    await gh.deployment(String(argv._[1] ?? context.name), true);
+                if (context.github !== false) {
+                    await gh.deployment(argv._[1] ?? context.name, true);
                 }
             }, async (error) => {
-                if (!context.github) {
+                if (context.github === false) {
                     return;
                 }
 
-                const err = error as { execution?: string; status?: string };
-                if (err.execution === 'UNAVAILABLE' && err.status === 'FAILED') {
-                    await gh.deployment(String(argv._[1] ?? context.name), true);
+                if (isRecord(error) && error.execution === 'UNAVAILABLE' && error.status === 'FAILED') {
+                    await gh.deployment(argv._[1] ?? context.name, true);
                 } else {
-                    await gh.deployment(String(argv._[1] ?? context.name), false);
+                    await gh.deployment(argv._[1] ?? context.name, false);
                 }
             });
         } else if (command === 'delete') {
@@ -194,23 +185,23 @@ async function main(): Promise<void> {
                 await context.cfn.commands.cancel(context.name);
                 fs.unlinkSync(cloudFormationPath);
 
-                if (context.github) {
-                    await gh.deployment(String(argv._[1] ?? context.name), false);
+                if (context.github !== false) {
+                    await gh.deployment(argv._[1] ?? context.name, false);
                 }
             });
         }
-    } else if (mode[command]) {
+    } else if (subcommand) {
         if (['init', 'sso'].includes(command)) {
-            await mode[command].main?.(process.argv.slice(2));
+            await subcommand.main?.(process.argv.slice(2));
         } else if (command === 'env') {
             argv.template = false;
             const context = await Context.generate(argv);
-            await mode[command].main?.(context, process.argv.slice(2));
+            await subcommand.main?.(context, process.argv.slice(2));
         } else {
             const context = await Context.generate(argv);
 
             try {
-                await mode[command].main?.(context, process.argv.slice(2));
+                await subcommand.main?.(context, process.argv.slice(2));
             } catch (error) {
                 const err = asError(error);
                 console.error(`Command failed: ${err.message}`);
@@ -221,6 +212,24 @@ async function main(): Promise<void> {
         }
     } else {
         console.error('Subcommand not found!');
+        process.exit(1);
+    }
+}
+
+async function checkArtifacts(context: Context): Promise<void> {
+    if (argv['skip-artifacts']) {
+        console.log('warn - Skipping artifacts check due to --skip-artifacts');
+        return;
+    }
+
+    try {
+        await artifacts(context);
+    } catch (error) {
+        const err = asError(error);
+        console.error(`Artifacts Check Failed: ${err.message}`);
+        if (argv.debug) {
+            throw err;
+        }
         process.exit(1);
     }
 }
@@ -247,9 +256,5 @@ async function runDeploymentCommand(
 }
 
 function hash(): string {
-    return Math.random().toString(36).substring(2, 15);
-}
-
-function asError(error: unknown): Error {
-    return error instanceof Error ? error : new Error(String(error));
+    return Math.random().toString(36).slice(2, 15);
 }

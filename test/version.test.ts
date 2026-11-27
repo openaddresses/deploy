@@ -29,7 +29,7 @@ describe('Version', () => {
     it('returns null when the registry is unreachable or malformed', async () => {
         await expect(Version.latest(fetchStub({}, false))).resolves.toBeNull();
         await expect(Version.latest(fetchStub({ version: 7 }))).resolves.toBeNull();
-        await expect(Version.latest((async () => { throw new Error('offline'); }) as unknown as typeof fetch)).resolves.toBeNull();
+        await expect(Version.latest(async () => { throw new Error('offline'); })).resolves.toBeNull();
     });
 
     it('is disabled by DEPLOY_NO_UPDATE_CHECK or CI', () => {
@@ -40,7 +40,9 @@ describe('Version', () => {
 
     it('prints a notice only when a newer version exists', async () => {
         const lines: string[] = [];
-        const log = (msg: string) => lines.push(msg);
+        const log = (msg: string): void => {
+            lines.push(msg);
+        };
 
         await expect(Version.check({ env: {}, fetchFn: fetchStub({ version: '99.0.0' }), log })).resolves.toBe('99.0.0');
         expect(lines.join('\n')).toContain(`${Version.current()} -> 99.0.0`);
